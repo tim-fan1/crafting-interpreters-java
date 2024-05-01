@@ -81,29 +81,35 @@ public class GenerateAst {
     writer.println("  }");
   }
   private static void defineVisitor(PrintWriter writer, String baseName, List<String> types) {
-    // the client offers the customer the whole menu, 
-    // and asks the customer to choose what they want from that menu.
-    //
-    // for (Person customer : customers) {
-    //   Choice choice = customer.choose(menu); 
-    // }
-    //
-    // and then each customer chooses what they want from the menu.
-    //
-    // Person Alice() {
-    //   Choice choose(Menu menu) {
-    //     // Alice chooses apple from the given menu.
-    //     return menu.apple();
-    //   }
-    // }
-    //
-    // Person Bob() {
-    //   Choice choose(Menu menu) {
-    //     // Bob chooses banana from the given menu.
-    //     return menu.banana();
-    //   }
-    // }
-    //
+    {
+      String s = 
+        "  /**\n" +
+        "   * the client offers the customer the whole menu,\n" +
+        "   * and asks the customer to choose what they want from that menu.\n" +
+        "   *\n" +
+        "   * for (Person customer : customers) {\n" +
+        "   *   Choice choice = customer.choose(menu);\n" +
+        "   * }\n" +
+        "   *\n" +
+        "   * and then each customer chooses what they want from the menu.\n" +
+        "   *\n" +
+        "   * Person Alice() {\n" +
+        "   *   Choice choose(Menu menu) {\n" +
+        "   *     // Alice chooses apple from the given menu.\n" +
+        "   *      return menu.apple();\n" +
+        "   *    }\n" +
+        "   *  }\n" +
+        "   *\n" +
+        "   *  Person Bob() {\n" +
+        "   *    Choice choose(Menu menu) {\n" +
+        "   *      // Bob chooses banana from the given menu.\n" +
+        "   *      return menu.banana();\n" +
+        "   *    }\n" +
+        "   *  }\n" +
+        "   *\n" +
+        "   */";
+      writer.println(s);
+    }
     // first, each customer needs to be able to read the same menu.
     writer.println("  interface Visitor<R> {");
     // making a menu item for each kind of customer.
