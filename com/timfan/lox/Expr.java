@@ -26,7 +26,6 @@ abstract class Expr {
    *      return menu.banana();
    *    }
    *  }
-   *
    */
   interface Visitor<R> {
     R visitBinaryExpr(Binary expr);
