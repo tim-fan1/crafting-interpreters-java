@@ -34,7 +34,12 @@ public class GenerateAst {
     writer.println("import java.util.List;");
     writer.println();
     writer.println("abstract class " + baseName + " {");
-    // root node has no fields. so skip to making subclasses.
+    
+    // making the visitor interface (how clients, like the parser or interpreter, can interact with Expr objects).
+    defineVisitor(writer, baseName, types);
+    writer.println("  abstract <R> R accept(Visitor<R> visitor);");
+
+    // making subclasses for each type of subexpression.
     for (String type : types) {
       // for this subclass.
       String className = type.split(":")[0].trim();
@@ -69,6 +74,44 @@ public class GenerateAst {
       writer.println("    final " + field + ";");
     }
 
+    writer.println("    @Override");
+    writer.println("    <R> R accept(Visitor<R> visitor) {");
+    writer.println("      return visitor.visit" + className + baseName + "(this);");
+    writer.println("    }");
     writer.println("  }");
+  }
+  private static void defineVisitor(PrintWriter writer, String baseName, List<String> types) {
+    // the client offers the customer the whole menu, 
+    // and asks the customer to choose what they want from that menu.
+    //
+    // for (Person customer : customers) {
+    //   Choice choice = customer.choose(menu); 
+    // }
+    //
+    // and then each customer chooses what they want from the menu.
+    //
+    // Person Alice() {
+    //   Choice choose(Menu menu) {
+    //     // Alice chooses apple from the given menu.
+    //     return menu.apple();
+    //   }
+    // }
+    //
+    // Person Bob() {
+    //   Choice choose(Menu menu) {
+    //     // Bob chooses banana from the given menu.
+    //     return menu.banana();
+    //   }
+    // }
+    //
+    // first, each customer needs to be able to read the same menu.
+    writer.println("  interface Visitor<R> {");
+    // making a menu item for each kind of customer.
+    for (String type : types) {
+      String typeName = type.split(":")[0].trim();
+      writer.println("    R visit" + typeName + baseName + "(" + typeName + " " + baseName.toLowerCase() + ");");
+    }
+    writer.println("  }");
+    // then, each kind of customer should choose which menu item they would choose.
   }
 }
