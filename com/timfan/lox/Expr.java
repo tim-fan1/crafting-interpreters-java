@@ -1,7 +1,5 @@
 package com.timfan.lox;
 
-import java.util.List;
-
 abstract class Expr {
   /**
    * the client offers the customer the whole menu,
