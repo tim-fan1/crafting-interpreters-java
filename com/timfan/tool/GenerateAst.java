@@ -106,7 +106,6 @@ public class GenerateAst {
         "   *      return menu.banana();\n" +
         "   *    }\n" +
         "   *  }\n" +
-        "   *\n" +
         "   */";
       writer.println(s);
     }
