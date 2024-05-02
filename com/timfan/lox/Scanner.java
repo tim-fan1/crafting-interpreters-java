@@ -169,7 +169,7 @@ class Scanner {
       // current is now on the character (or EOF) just after the last digit.
     }
     // convert the string to its equivalent double, 
-    // AND THEN also convert that double to a Double,
+    // and then ALSO convert that double to a Double,
     // wrap the double in a Double wrapper, a Double object.
     addToken(TokenType.NUMBER, Double.parseDouble(source.substring(start, current)));;
   }
