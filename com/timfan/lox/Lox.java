@@ -43,10 +43,26 @@ public class Lox {
     List<Token> tokens = scanner.scanTokens();
     // parse through the tokens and generate a syntax tree.
     Parser parser = new Parser(tokens);
-    Expr e = parser.parse();
-    AstPrinter a = new AstPrinter();
-    System.out.println(a.print(e));
+    // the root of the syntax tree.
+    Expr expr = parser.parse();
+    if (expr == null) return; // syntax error.
+    System.out.println(new AstPrinter().print(expr));
   }
+  /**
+   * Used by Parser.
+   */
+  static void error(Token token, String message) {
+    if (token.type == TokenType.EOF) {
+      report(token.line, " at end", message);
+    } else {
+      // error at which part of the source code? the part of the source code that caused the error 
+      // is stored as the token's lexeme, the token's source code representation
+      report(token.line, " at '" + token.lexeme + "'", message);
+    }
+  }
+  /**
+   * Used by Scanner.
+   */
   static void error(int line, String message) {
     report(line, "", message);
   }
