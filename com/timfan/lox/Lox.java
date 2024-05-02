@@ -10,6 +10,7 @@ import java.util.List;
 
 public class Lox {
   static boolean hadError = false;
+  static boolean hadRuntimeError = false;
   public static void main(String[] args) throws IOException {
     if (args.length > 1) {
       System.out.println("Usage: jlox [script]");
@@ -24,6 +25,7 @@ public class Lox {
     byte[] bytes = Files.readAllBytes(Paths.get(path));
     run(new String(bytes, Charset.defaultCharset()));
     if (hadError) System.exit(65);
+    if (hadRuntimeError) System.exit(70);
   }
   private static void runPrompt() throws IOException {
     InputStreamReader input = new InputStreamReader(System.in);
@@ -46,11 +48,23 @@ public class Lox {
     // the root of the syntax tree.
     Expr expr = parser.parse();
     if (expr == null) return; // syntax error.
-    System.out.println(new AstPrinter().print(expr));
+    // System.out.println(new AstPrinter().print(expr));
+    // all syntax is good. now interpret the valid source code.
+    // the only errors we will see from now are runtime errors, 
+    // which we will also handle gracefully.
+    new Interpreter().interpret(expr);
   }
   private static void report(int line, String where, String message) {
     System.err.println("[line " + line + "] Error" + where + ": " + message);
     hadError = true;
+  }
+  /**
+   * Used by Interpreter.
+   */
+  static void runtimeError(RuntimeError error) {
+    System.err.println(error.getMessage() +
+        "\n[line " + error.token.line + "]");
+    hadRuntimeError = true;
   }
   /**
    * Used by Parser.
