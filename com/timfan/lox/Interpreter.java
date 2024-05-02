@@ -5,14 +5,27 @@ class Interpreter implements Expr.Visitor<Object> {
   public void interpret(Expr expr) {
     try {
       Object value = expr.accept(this);
-      System.out.println(value.toString());
+      System.out.println(stringify(value));
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
     }
   }
-
-  // TODO:
+  /**
+   * We don't want to show the user java's string representation of these java objects.
+   * Instead, we show the user lox's string representation of lox's values.
+   * @return Lox's string representation of the Lox value given.
+   */
   String stringify(Object value) {
+    if (value == null) return "nil";
+    if (value instanceof Double) {
+      String string = value.toString();
+      if (string.endsWith(".0")) {
+        // though this Lox value is being stored in a java.lang.Double,
+        // the underlying value is really a Lox integer.
+        // to not confuse the user, pretend as if the value was stored in a java.lang.Integer.
+        return string.substring(0, string.length() - 2);
+      }
+    }
     return value.toString();
   }
   @Override
