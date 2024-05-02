@@ -41,9 +41,11 @@ public class Lox {
     Scanner scanner = new Scanner(source);
     // scan through source code to generate tokens.
     List<Token> tokens = scanner.scanTokens();
-    for (Token token : tokens) {
-      System.out.println(token);
-    }
+    // parse through the tokens and generate a syntax tree.
+    Parser parser = new Parser(tokens);
+    Expr e = parser.parse();
+    AstPrinter a = new AstPrinter();
+    System.out.println(a.print(e));
   }
   static void error(int line, String message) {
     report(line, "", message);

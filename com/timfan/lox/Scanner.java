@@ -14,6 +14,16 @@ class Scanner {
   private int current = 0; // current character of current lexeme.
   private int line = 1; // which line our current lexeme is on.
 
+  /**
+   * when we have found that a lexeme is just 
+   * a string of alphanumeric characters,
+   * (so no opening double quotes!), otherwise known as an identifier:
+   * 
+   * check if that lexeme matches one of the keywords here.
+   * if it does, then we should generate a special token
+   * matching that keyword, e.g., the lexeme "and" 
+   * should generate a token with type TokenType.AND.
+   */
   private static final Map<String, TokenType> keywords;
   static {
     keywords = new HashMap<>();
@@ -121,7 +131,8 @@ class Scanner {
   }
   private void identifier() {
     while (isAlphaNumeric(peek())) advance();
-    // figure out if this is a variable identifier (like b), or a keyword (like var).
+    // figure out if this string of alphanumeric characters (so only [a-zA-Z][a-zA-Z0-9]*),
+    // is a keyword (like var), or is it just a normal identifer (like b).
     TokenType type = keywords.get(source.substring(start, current));
     if (type == null) type = TokenType.IDENTIFIER;
     addToken(type);
