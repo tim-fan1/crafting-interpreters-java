@@ -89,8 +89,8 @@ public class Parser {
    * primary -> ( NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" )
    */
   private Expr primary() {
-    if (match(TokenType.TRUE)) return new Expr.Literal(true);
-    if (match(TokenType.FALSE)) return new Expr.Literal(false);
+    if (match(TokenType.TRUE)) return new Expr.Literal(Boolean.valueOf(true));
+    if (match(TokenType.FALSE)) return new Expr.Literal(Boolean.valueOf(false));
     if (match(TokenType.NIL)) return new Expr.Literal(null);
     if (match(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(tokens.get(current - 1).literal);
     if (match(TokenType.LEFT_PAREN)) {
