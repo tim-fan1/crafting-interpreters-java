@@ -11,6 +11,11 @@ import java.util.List;
 public class Lox {
   static boolean hadError = false;
   static boolean hadRuntimeError = false;
+  static Interpreter interpreter = new Interpreter(); // for runPrompt, rather than make a new interpreter every loop 
+                                                      // (as we would be doing if we make the interpreter in run),
+                                                      // we instead make it on Lox bootup, which also allows for global variables 
+                                                      // to be used in runPrompt (instead of all variables expiring 
+                                                      // at the end of each loop).
   public static void main(String[] args) throws IOException {
     if (args.length > 1) {
       System.out.println("Usage: jlox [script]");
@@ -52,7 +57,7 @@ public class Lox {
     // all syntax is good. now interpret the valid source code.
     // the only errors we will see from now are runtime errors, 
     // which we will also handle gracefully.
-    new Interpreter().interpret(expr);
+    interpreter.interpret(expr);
   }
   private static void report(int line, String where, String message) {
     System.err.println("[line " + line + "] Error" + where + ": " + message);
