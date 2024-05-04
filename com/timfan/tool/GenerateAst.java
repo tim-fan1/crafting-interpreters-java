@@ -20,11 +20,13 @@ public class GenerateAst {
       "Binary   : Expr left, Token operator, Expr right",
       "Grouping : Expr expression",
       "Literal  : Object value",
-      "Unary    : Token operator, Expr right"
+      "Unary    : Token operator, Expr right",
+      "Variable : Token identifier"
     ));
     defineAst(outputDir, "Stmt", Arrays.asList(
-      "Expression : Expr expression",
-      "Print      : Expr expression"
+      "Expression       : Expr expression",
+      "Print            : Expr expression", 
+      "VarDeclaration   : Token identifier, Expr initialiser"
     ));
   }
   private static void defineAst(

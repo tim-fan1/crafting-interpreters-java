@@ -15,21 +15,40 @@ public class Parser {
     // walk through tokens and keep forming statements, constructing a list of statement objects.
     List<Stmt> statements = new ArrayList<>();
     while (!isAtEnd()) {
-      statements.add(statement());
+      statements.add(declaration());
     }
     return statements;
   }
   private boolean isAtEnd() {
     return tokens.get(current).type == TokenType.EOF;
   }
+  private Stmt declaration() {
+    try {
+      if (match(TokenType.VAR)) return varDeclaration();
+      return statement();
+    } catch (ParseError error) {
+      throw error;
+      // TODO: synchronise(); // handle ParseError gracefully.
+      // return null;
+    }
+  }
+  private Stmt varDeclaration() {
+    Token identifier = consume(TokenType.IDENTIFIER, "Expect variable name.");
+    Expr initialiser = null; 
+    if (match(TokenType.EQUAL)) {
+      initialiser = expression();
+    }
+    consume(TokenType.SEMICOLON, "Expect ; after variable declaration.");
+    return new Stmt.VarDeclaration(identifier, initialiser);
+  }
   private Stmt statement() {
     if (match(TokenType.PRINT)) {
       Stmt s = new Stmt.Print(expression());
-      matchThrowError(TokenType.SEMICOLON, "Expect ; after expression.");
+      consume(TokenType.SEMICOLON, "Expect ; after expression.");
       return s;
-    } else {
+    } else /* if is expression statement. */ {
       Stmt s = new Stmt.Expression(expression());
-      matchThrowError(TokenType.SEMICOLON, "Expect ; after expression.");
+      consume(TokenType.SEMICOLON, "Expect ; after expression.");
       return s;
     }
   }
@@ -113,24 +132,32 @@ public class Parser {
     if (match(TokenType.LEFT_PAREN)) {
       Expr expr = expression();
       // once control reaches here, we have to confirm that the next token is a right paren.
-      matchThrowError(TokenType.RIGHT_PAREN, "Expect ) after expression.");
+      consume(TokenType.RIGHT_PAREN, "Expect ) after expression.");
       return new Expr.Grouping(expr);
+    }
+    if (match(TokenType.IDENTIFIER)) {
+      // let the interpreter know that here, 
+      // the user wants access to the variable with 
+      // the name stored in tokens.get(current - 1).lexeme.
+      return new Expr.Variable(tokens.get(current - 1));
     }
     Lox.error(tokens.get(current), "Expect expression.");
     throw new ParseError();
   }
   /**
-   * Like match(), but also throws error if doesn't match.
+   * Consumes current token if matches the given type, and returns the consumed token.
+   * If current token doesn't match the given type, then don't consume token, and throw error.
+   * @param type
    * @param message The error message to show to user.
    * @throws ParseError If current token does not match given type. 
-   * If does match, then don't throw error, and instead just advance current.
+   * @return The consumed token.
    */
-  private void matchThrowError(TokenType type, String message) {
+  private Token consume(TokenType type, String message) {
     if (tokens.get(current).type != type) {
       Lox.error(tokens.get(current), message);
       throw new ParseError();
     } else {
-      current++;
+      return tokens.get(current++);
     }
   }
   /**

@@ -7,6 +7,7 @@ import java.util.List;
  * and also the Expr objects within those Stmt objects.
  */
 class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
+  Environment environment = new Environment();
   public void interpret(List<Stmt> statements) {
     try {
       for (Stmt statement : statements) {
@@ -15,6 +16,16 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
     } 
+  }
+  @Override
+  public Void visitVarDeclarationStmt(Stmt.VarDeclaration stmt) {
+    String name = stmt.identifier.lexeme;
+    Object value = null;
+    if (stmt.initialiser != null) {
+      value = stmt.initialiser.accept(this);
+    }
+    environment.define(name, value);
+    return null;
   }
   @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
@@ -27,6 +38,10 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     // evaluate the expression within this statement, and print out the result.
     System.out.println(stringify(stmt.expression.accept(this)));
     return null;
+  }
+  @Override
+  public Object visitVariableExpr(Expr.Variable expr) {
+    return environment.get(expr.identifier);
   }
   @Override
   public Object visitBinaryExpr(Expr.Binary expr) {
