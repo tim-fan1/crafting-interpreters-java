@@ -22,6 +22,10 @@ public class GenerateAst {
       "Literal  : Object value",
       "Unary    : Token operator, Expr right"
     ));
+    defineAst(outputDir, "Stmt", Arrays.asList(
+      "Expression : Expr expression",
+      "Print      : Expr expression"
+    ));
   }
   private static void defineAst(
     String outputDir, String baseName, List<String> types)
@@ -31,8 +35,8 @@ public class GenerateAst {
 
     writer.println("package com.timfan.lox;");
     writer.println();
-    writer.println("import java.util.List;");
-    writer.println();
+    // writer.println("import java.util.List;");
+    // writer.println();
     writer.println("abstract class " + baseName + " {");
     
     // making the visitor interface (how clients, like the parser or interpreter, can interact with Expr objects).
@@ -69,7 +73,6 @@ public class GenerateAst {
     writer.println("    }");
 
     // Fields.
-    writer.println();
     for (String field : fields) {
       writer.println("    final " + field + ";");
     }

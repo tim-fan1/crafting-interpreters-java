@@ -38,7 +38,6 @@ abstract class Expr {
       this.operator = operator;
       this.right = right;
     }
-
     final Expr left;
     final Token operator;
     final Expr right;
@@ -51,7 +50,6 @@ abstract class Expr {
     Grouping(Expr expression) {
       this.expression = expression;
     }
-
     final Expr expression;
     @Override
     <R> R accept(Visitor<R> visitor) {
@@ -62,7 +60,6 @@ abstract class Expr {
     Literal(Object value) {
       this.value = value;
     }
-
     final Object value;
     @Override
     <R> R accept(Visitor<R> visitor) {
@@ -74,7 +71,6 @@ abstract class Expr {
       this.operator = operator;
       this.right = right;
     }
-
     final Token operator;
     final Expr right;
     @Override

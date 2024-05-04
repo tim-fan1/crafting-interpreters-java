@@ -1,32 +1,32 @@
 package com.timfan.lox;
 
-class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
 
-  public void interpret(Expr expr) {
+/**
+ * Interpreter is a client that wants to operate on both Stmt objects, 
+ * and also the Expr objects within those Stmt objects.
+ */
+class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
+  public void interpret(List<Stmt> statements) {
     try {
-      Object value = expr.accept(this);
-      System.out.println(stringify(value));
+      for (Stmt statement : statements) {
+        statement.accept(this);
+      }
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
-    }
+    } 
   }
-  /**
-   * We don't want to show the user java's string representation of these java objects.
-   * Instead, we show the user lox's string representation of lox's values.
-   * @return Lox's string representation of the Lox value given.
-   */
-  String stringify(Object value) {
-    if (value == null) return "nil";
-    if (value instanceof Double) {
-      String string = value.toString();
-      if (string.endsWith(".0")) {
-        // though this Lox value is being stored in a java.lang.Double,
-        // the underlying value is really a Lox integer.
-        // to not confuse the user, pretend as if the value was stored in a java.lang.Integer.
-        return string.substring(0, string.length() - 2);
-      }
-    }
-    return value.toString();
+  @Override
+  public Void visitExpressionStmt(Stmt.Expression stmt) {
+    // evaluate the expression within this statement.
+    stmt.expression.accept(this);
+    return null;
+  }
+  @Override
+  public Void visitPrintStmt(Stmt.Print stmt) {
+    // evaluate the expression within this statement, and print out the result.
+    System.out.println(stringify(stmt.expression.accept(this)));
+    return null;
   }
   @Override
   public Object visitBinaryExpr(Expr.Binary expr) {
@@ -115,5 +115,23 @@ class Interpreter implements Expr.Visitor<Object> {
     }
     if (value == null) return false;
     return true;
+  }
+  /**
+   * We don't want to show the user java's string representation of these java objects.
+   * Instead, we show the user lox's string representation of lox's values.
+   * @return Lox's string representation of the Lox value given.
+   */
+  String stringify(Object value) {
+    if (value == null) return "nil";
+    if (value instanceof Double) {
+      String string = value.toString();
+      if (string.endsWith(".0")) {
+        // though this Lox value is being stored in a java.lang.Double,
+        // the underlying value is really a Lox integer.
+        // to not confuse the user, pretend as if the value was stored in a java.lang.Integer.
+        return string.substring(0, string.length() - 2);
+      }
+    }
+    return value.toString();
   }
 }

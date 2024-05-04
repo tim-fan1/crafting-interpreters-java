@@ -1,6 +1,7 @@
 package com.timfan.lox;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class Parser {
   private static class ParseError extends RuntimeException {}
@@ -9,11 +10,27 @@ public class Parser {
   Parser(List<Token> tokens) {
     this.tokens = tokens;
   }
-  Expr parse() {
-    try {
-      return expression();
-    } catch (ParseError error) {
-      return null;
+  List<Stmt> parse() {
+    // a program is a sequence of statements (ending in an EOF token).
+    // walk through tokens and keep forming statements, constructing a list of statement objects.
+    List<Stmt> statements = new ArrayList<>();
+    while (!isAtEnd()) {
+      statements.add(statement());
+    }
+    return statements;
+  }
+  private boolean isAtEnd() {
+    return tokens.get(current).type == TokenType.EOF;
+  }
+  private Stmt statement() {
+    if (match(TokenType.PRINT)) {
+      Stmt s = new Stmt.Print(expression());
+      matchThrowError(TokenType.SEMICOLON, "Expect ; after expression.");
+      return s;
+    } else {
+      Stmt s = new Stmt.Expression(expression());
+      matchThrowError(TokenType.SEMICOLON, "Expect ; after expression.");
+      return s;
     }
   }
   private Expr expression() {
@@ -96,15 +113,25 @@ public class Parser {
     if (match(TokenType.LEFT_PAREN)) {
       Expr expr = expression();
       // once control reaches here, we have to confirm that the next token is a right paren.
-      if (match(TokenType.RIGHT_PAREN)) {
-        return new Expr.Grouping(expr);
-      } else {
-        Lox.error(tokens.get(current), "Expect ) after expression!");
-        throw new ParseError();
-      }
+      matchThrowError(TokenType.RIGHT_PAREN, "Expect ) after expression.");
+      return new Expr.Grouping(expr);
     }
     Lox.error(tokens.get(current), "Expect expression.");
     throw new ParseError();
+  }
+  /**
+   * Like match(), but also throws error if doesn't match.
+   * @param message The error message to show to user.
+   * @throws ParseError If current token does not match given type. 
+   * If does match, then don't throw error, and instead just advance current.
+   */
+  private void matchThrowError(TokenType type, String message) {
+    if (tokens.get(current).type != type) {
+      Lox.error(tokens.get(current), message);
+      throw new ParseError();
+    } else {
+      current++;
+    }
   }
   /**
    * @param types Check if the current token matches any of the types in types.

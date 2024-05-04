@@ -48,16 +48,13 @@ public class Lox {
     Scanner scanner = new Scanner(source);
     // scan through source code to generate tokens.
     List<Token> tokens = scanner.scanTokens();
-    // parse through the tokens and generate a syntax tree.
+    // parse through the tokens and generate a list of statements, 
+    // each statement is a single expression.
     Parser parser = new Parser(tokens);
-    // the root of the syntax tree.
-    Expr expr = parser.parse();
-    if (expr == null) return; // syntax error.
-    // System.out.println(new AstPrinter().print(expr));
-    // all syntax is good. now interpret the valid source code.
-    // the only errors we will see from now are runtime errors, 
-    // which we will also handle gracefully.
-    interpreter.interpret(expr);
+    List<Stmt> statements = parser.parse();
+    // all syntax is good. now interpret the valid source code, 
+    // starting from the first statement.
+    interpreter.interpret(statements);
   }
   private static void report(int line, String where, String message) {
     System.err.println("[line " + line + "] Error" + where + ": " + message);
