@@ -87,7 +87,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       case TokenType.MINUS:
         // make sure value is a Double.
         checkNumberOperand(expr.operator, value);
-        break;
+        return -(double)value;
       case TokenType.BANG:
         // in Lox all objects are either truthy or falsey, so can negate value no matter what object it is.
         return Boolean.valueOf(isTruthy(value));
