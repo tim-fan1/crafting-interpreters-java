@@ -45,15 +45,10 @@ public class Lox {
     }
   }
   private static void run(String source) {
-    Scanner scanner = new Scanner(source);
-    // scan through source code to generate tokens.
-    List<Token> tokens = scanner.scanTokens();
-    // parse through the tokens and generate a list of statements, 
-    // each statement is a single expression.
-    Parser parser = new Parser(tokens);
-    List<Stmt> statements = parser.parse();
-    // all syntax is good. now interpret the valid source code, 
-    // starting from the first statement.
+    List<Token> tokens = new Scanner(source).scanTokens();
+    List<Stmt> statements = new Parser(tokens).parse();
+    if (hadError) return;
+    // all syntax is good, no scanning errors or parsing errors reported. 
     interpreter.interpret(statements);
   }
   private static void report(int line, String where, String message) {
@@ -61,7 +56,7 @@ public class Lox {
     hadError = true;
   }
   /**
-   * Used by Interpreter.
+   * Used by Interpreter to report to Lox that there were RuntimeErrors.
    */
   static void runtimeError(RuntimeError error) {
     System.err.println(error.getMessage() +
@@ -69,7 +64,7 @@ public class Lox {
     hadRuntimeError = true;
   }
   /**
-   * Used by Parser.
+   * Used by Parser to report to Lox that there were ParseErrors.
    */
   static void error(Token token, String message) {
     if (token.type == TokenType.EOF) {
@@ -81,7 +76,7 @@ public class Lox {
     }
   }
   /**
-   * Used by Scanner.
+   * Used by Scanner to report to Lox that there was an error during Scanning.
    */
   static void error(int line, String message) {
     report(line, "", message);

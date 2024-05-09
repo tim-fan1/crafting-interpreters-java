@@ -40,6 +40,13 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     return null;
   }
   @Override
+  public Object visitAssignExpr(Expr.Assign expr) {
+    Token identifier = expr.identifier;
+    Object value = expr.value.accept(this);
+    environment.assign(identifier, value);
+    return value;
+  }
+  @Override
   public Object visitVariableExpr(Expr.Variable expr) {
     return environment.get(expr.identifier);
   }
