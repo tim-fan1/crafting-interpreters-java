@@ -123,6 +123,18 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       case TokenType.SLASH:
         checkNumberOperand(operator, left, right);
         return (Double)left / (Double)right;
+      case TokenType.LESS:
+        checkNumberOperand(operator, left, right);
+        return (Double)left < (Double)right;
+      case TokenType.GREATER:
+        checkNumberOperand(operator, left, right);
+        return (Double)left > (Double)right;
+      case TokenType.LESS_EQUAL:
+        checkNumberOperand(operator, left, right);
+        return (Double)left <=(Double)right;
+      case TokenType.GREATER_EQUAL:
+        checkNumberOperand(operator, left, right);
+        return (Double)left >=(Double)right;
       default:
         break;
     }
