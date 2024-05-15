@@ -9,6 +9,15 @@ import java.util.List;
 class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   Environment environment = new Environment();
   @Override
+  public Void visitWhileStmt(Stmt.While stmt) {
+    Expr condition = stmt.condition;
+    Stmt body = stmt.body;
+    while (isTruthy(evaluate(condition))) {
+      execute(body);
+    }
+    return null;
+  }
+  @Override
   public Void visitIfStmt(Stmt.If stmt) {
     Object conditionResult = evaluate(stmt.condition);
     if (isTruthy(conditionResult)) {

@@ -2,6 +2,7 @@ package com.timfan.lox;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Parser {
   private static class ParseError extends RuntimeException {}
@@ -79,11 +80,75 @@ public class Parser {
       return printStatement();
     } else if (match(TokenType.IF)) {
       return ifStatement();
+    } else if (match(TokenType.FOR)) {
+      return forStatement();
+    } else if (match(TokenType.WHILE)) {
+      return whileStatement();
     } else if (match(TokenType.LEFT_BRACE)) {
       return blockStatement();
     } else /* if is expression statement. */ {
       return expressionStatement();
     }
+  }
+  private Stmt forStatement() {
+    consume(TokenType.LEFT_PAREN, "Expect ( after if keyword.");
+
+    // creating the parts of a for loop statement.
+
+    // - initialiser. for (var i = 0; ), for (i = 0; )
+    Stmt initialiser;
+    if (match(TokenType.SEMICOLON)) {
+      initialiser = null;
+    } else if (match(TokenType.VAR)) {
+      initialiser = varDeclaration();
+    } else {
+      initialiser = expressionStatement();
+    }
+
+    // - condition. for (var i = 0; i < 5; ), for (;;)
+    Expr condition;
+    if (match(TokenType.SEMICOLON)) {
+      condition = new Expr.Literal(true);
+    } else {
+      condition = expression();
+    }
+    consume(TokenType.SEMICOLON, "Expect ; after condition in for loop.");
+
+    // - step. for (var i = 0; i < 5; i = i + 1)
+    Expr step;
+    if (match(TokenType.RIGHT_PAREN)) {
+      step = null;
+    } else {
+      step = expression();
+      consume(TokenType.RIGHT_PAREN, "Expect ) at end of for loop step.");
+    }
+
+    // - body. for (var i = 0; i < 5; i = i + 1) print i;
+    Stmt body = statement();
+
+    // finished making the parts of the for loop.
+    // now using a Stmt.Block to group together these parts of a for loop.
+    List<Stmt> forStatements = new ArrayList<>();
+    if (initialiser != null) {
+      // run the initiliaser first.
+      forStatements.add(initialiser);
+    }
+    // and then run a while loop on the condition given and body given,
+    forStatements.add(
+      new Stmt.While(
+        condition, 
+        // adding in the step to the end of the body given, if there is a step.
+        (step == null) ? body : new Stmt.Block(Arrays.asList(body, new Stmt.Expression(step)))
+      )
+    );
+    return new Stmt.Block(forStatements);
+  }
+  private Stmt whileStatement() {
+    consume(TokenType.LEFT_PAREN, "Expect ( after if keyword.");
+    Expr condition = expression();
+    consume(TokenType.RIGHT_PAREN, "Expect ) after expression.");
+    Stmt body = statement();
+    return new Stmt.While(condition, body);
   }
   private Stmt ifStatement() {
     consume(TokenType.LEFT_PAREN, "Expect ( after if keyword.");
