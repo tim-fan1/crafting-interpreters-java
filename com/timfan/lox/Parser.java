@@ -76,14 +76,30 @@ public class Parser {
   }
   private Stmt statement() {
     if (match(TokenType.PRINT)) {
-      Stmt s = new Stmt.Print(expression());
-      consume(TokenType.SEMICOLON, "Expect ; after expression.");
-      return s;
+      return printStatement();
+    } else if (match(TokenType.LEFT_BRACE)) {
+      return blockStatement();
     } else /* if is expression statement. */ {
-      Stmt s = new Stmt.Expression(expression());
-      consume(TokenType.SEMICOLON, "Expect ; after expression.");
-      return s;
+      return expressionStatement();
     }
+  }
+  private Stmt blockStatement() {
+    List<Stmt> statements = new ArrayList<>();
+    while (peek().type != TokenType.RIGHT_BRACE && !isAtEnd()) {
+      statements.add(declaration());
+    }
+    consume(TokenType.RIGHT_BRACE, "Expect } at end of block.");
+    return new Stmt.Block(statements);
+  }
+  private Stmt printStatement() {
+    Expr expr = expression();
+    consume(TokenType.SEMICOLON, "Expect ; after expression.");
+    return new Stmt.Print(expr);
+  }
+  private Stmt expressionStatement() {
+    Expr expr = expression();
+    consume(TokenType.SEMICOLON, "Expect ; after expression.");
+    return new Stmt.Expression(expr);
   }
   private Expr expression() {
     return assignment();
@@ -97,15 +113,14 @@ public class Parser {
         // the thing to the left hand side of the equals sign is an identifier.
         Token identifer = ((Expr.Variable)expr).identifier;
         return new Expr.Assign(identifer, value);
-      } else {
+      } else /* if the thing to the left hand side is not an identifier. */ {
         // we have managed to parse through the entire (invalid) assignment 
         // expression and now we are expecting the next token to be a semicolon, 
         // so there is no need to resynchronise no need to panic and throw a ParseError. 
         //
         // instead, we let the parser continue parsing from this point on to find 
-        // if there are any more syntax errors, and just report to our Lox instance 
-        // that there was a parse error so that it doesn't run the interpreter 
-        // on the list of statements, some with invalid syntax, that we give to it. 
+        // if there are any more syntax errors, and just report to our Lox instance that there 
+        // was a parse error so that it doesn't run the interpreter on this erroneous code.
         //
         Lox.error(equals, "Invalid assignment target.");
         //
