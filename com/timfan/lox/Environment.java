@@ -11,7 +11,16 @@ import java.util.Map;
  * statements within those code blocks.
  */
 class Environment {
+  final Environment parent;
   private final Map<String, Object> values = new HashMap<>();
+  Environment() {
+    // the global variable environment.
+    parent = null;
+  }
+  Environment(Environment parent) {
+    // walking up the chain of parent environments will reach the global variable environment.
+    this.parent = parent;
+  }
   void define(String name, Object value) {
     values.put(name, value);
   }
@@ -19,13 +28,20 @@ class Environment {
    * Assign identifier.lexeme to be mapped to value in this environment,
    * only if identifier.lexeme has been defined in this environment before already.
    */
-  void assign(Token identifer, Object value) {
-    String name = identifer.lexeme;
+  void assign(Token identifier, Object value) {
+    String name = identifier.lexeme;
     if (values.containsKey(name)) {
       values.put(name, value);
       return;
     }
-    throw new RuntimeError(identifer, "Undefined variable '" + name + "'.");
+    // this environment doesn't have this identifier. check the parent environment, 
+    if (parent != null) {
+      // recursively walking up the chain trying each parent environment, until we reach the global environment.
+      parent.assign(identifier, value);
+    } else /* if parent is null */ {
+      // we are in the global variable environment and still haven't found.
+      throw new RuntimeError(identifier, "Undefined variable '" + name + "'.");
+    }
   }
   /**
    * @throws RuntimeError If is undefined variable.
@@ -34,7 +50,13 @@ class Environment {
     String name = identifier.lexeme;
     if (values.containsKey(name)) {
       return values.get(name);
-    } else {
+    }
+    // this environment doesn't have this identifier. check the parent environment, 
+    if (parent != null) {
+      // recursively walking up the chain trying each parent environment, until we reach the global environment.
+      return parent.get(identifier);
+    } else /* if parent is null */ {
+      // we are in the global variable environment and still haven't found.
       throw new RuntimeError(identifier, "Undefined variable '" + name + "'.");
     }
   }

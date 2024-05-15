@@ -1,5 +1,6 @@
 package com.timfan.lox;
 
+import java.util.List;
 abstract class Stmt {
   /**
    * the client offers the customer the whole menu,
@@ -29,6 +30,7 @@ abstract class Stmt {
     R visitExpressionStmt(Expression stmt);
     R visitPrintStmt(Print stmt);
     R visitVarDeclarationStmt(VarDeclaration stmt);
+    R visitBlockStmt(Block stmt);
   }
   abstract <R> R accept(Visitor<R> visitor);
   static class Expression extends Stmt {
@@ -61,6 +63,16 @@ abstract class Stmt {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitVarDeclarationStmt(this);
+    }
+  }
+  static class Block extends Stmt {
+    Block(List<Stmt> statements) {
+      this.statements = statements;
+    }
+    final List<Stmt> statements;
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitBlockStmt(this);
     }
   }
 }

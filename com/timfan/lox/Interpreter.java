@@ -8,21 +8,46 @@ import java.util.List;
  */
 class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   Environment environment = new Environment();
+  private void execute(Stmt stmt) {
+    stmt.accept(this);
+  }
+  private Object evaluate(Expr expr) {
+    return expr.accept(this);
+  }
   public void interpret(List<Stmt> statements) {
     try {
       for (Stmt statement : statements) {
-        statement.accept(this);
+        execute(statement);
       }
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
     } 
   }
   @Override
+  public Void visitBlockStmt(Stmt.Block stmt) {
+    // we are in the global environment right now, this.environment is the global environment.
+    // save reference to global environment so that interpreter can change 
+    // this.environment back to the global environment after finishing executing block.
+    executeBlock(stmt.statements, new Environment(environment));
+    return null;
+  }
+  private void executeBlock(List<Stmt> statements, Environment local) {
+    try {
+      this.environment = local;
+      for (Stmt statement : statements) {
+        execute(statement);
+      }
+    } finally {
+      // finished executing block, revert environment back.
+      this.environment = local.parent;
+    }
+  } 
+  @Override
   public Void visitVarDeclarationStmt(Stmt.VarDeclaration stmt) {
     String name = stmt.identifier.lexeme;
     Object value = null;
     if (stmt.initialiser != null) {
-      value = stmt.initialiser.accept(this);
+      value = evaluate(stmt.initialiser);
     }
     environment.define(name, value);
     return null;
@@ -30,19 +55,19 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
     // evaluate the expression within this statement.
-    stmt.expression.accept(this);
+    evaluate(stmt.expression);
     return null;
   }
   @Override
   public Void visitPrintStmt(Stmt.Print stmt) {
     // evaluate the expression within this statement, and print out the result.
-    System.out.println(stringify(stmt.expression.accept(this)));
+    System.out.println(stringify(evaluate(stmt.expression)));
     return null;
   }
   @Override
   public Object visitAssignExpr(Expr.Assign expr) {
     Token identifier = expr.identifier;
-    Object value = expr.value.accept(this);
+    Object value = evaluate(expr.value);
     environment.assign(identifier, value);
     return value;
   }
@@ -52,8 +77,8 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   }
   @Override
   public Object visitBinaryExpr(Expr.Binary expr) {
-    Object left = expr.left.accept(this);
-    Object right = expr.right.accept(this);
+    Object left = evaluate(expr.left);
+    Object right = evaluate(expr.right);
     Token operator = expr.operator;
     switch (operator.type) {
       case TokenType.PLUS:
@@ -81,7 +106,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   }
   @Override
   public Object visitGroupingExpr(Expr.Grouping expr) {
-    return expr.expression.accept(this);
+    return evaluate(expr.expression);
   }
   @Override
   public Object visitLiteralExpr(Expr.Literal expr) {

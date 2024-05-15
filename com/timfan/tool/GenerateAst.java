@@ -27,7 +27,8 @@ public class GenerateAst {
     defineAst(outputDir, "Stmt", Arrays.asList(
       "Expression       : Expr expression",
       "Print            : Expr expression", 
-      "VarDeclaration   : Token identifier, Expr initialiser"
+      "VarDeclaration   : Token identifier, Expr initialiser",
+      "Block            : List<Stmt> statements"
     ));
   }
   private static void defineAst(
@@ -38,7 +39,7 @@ public class GenerateAst {
 
     writer.println("package com.timfan.lox;");
     writer.println();
-    // writer.println("import java.util.List;");
+    writer.println("import java.util.List;");
     // writer.println();
     writer.println("abstract class " + baseName + " {");
     
