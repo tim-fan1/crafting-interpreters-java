@@ -111,8 +111,8 @@ public class Parser {
       condition = new Expr.Literal(true);
     } else {
       condition = expression();
+      consume(TokenType.SEMICOLON, "Expect ; after condition in for loop.");
     }
-    consume(TokenType.SEMICOLON, "Expect ; after condition in for loop.");
 
     // - step. for (var i = 0; i < 5; i = i + 1)
     Expr step;
@@ -133,8 +133,8 @@ public class Parser {
       // run the initiliaser first.
       forStatements.add(initialiser);
     }
-    // and then run a while loop on the condition given and body given,
     forStatements.add(
+      // and then run a while loop on the condition given and body given,
       new Stmt.While(
         condition, 
         // adding in the step to the end of the body given, if there is a step.
