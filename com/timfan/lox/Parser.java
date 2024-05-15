@@ -77,11 +77,24 @@ public class Parser {
   private Stmt statement() {
     if (match(TokenType.PRINT)) {
       return printStatement();
+    } else if (match(TokenType.IF)) {
+      return ifStatement();
     } else if (match(TokenType.LEFT_BRACE)) {
       return blockStatement();
     } else /* if is expression statement. */ {
       return expressionStatement();
     }
+  }
+  private Stmt ifStatement() {
+    consume(TokenType.LEFT_PAREN, "Expect ( after if keyword.");
+    Expr condition = expression();
+    consume(TokenType.RIGHT_PAREN, "Expect ) after expression.");
+    Stmt thenStmt = statement();
+    Stmt elseStmt = null;
+    if (match(TokenType.ELSE)) {
+      elseStmt = statement();
+    }
+    return new Stmt.If(condition, thenStmt, elseStmt);
   }
   private Stmt blockStatement() {
     List<Stmt> statements = new ArrayList<>();

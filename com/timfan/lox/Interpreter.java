@@ -8,6 +8,18 @@ import java.util.List;
  */
 class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   Environment environment = new Environment();
+  @Override
+  public Void visitIfStmt(Stmt.If stmt) {
+    Object conditionResult = evaluate(stmt.condition);
+    if (isTruthy(conditionResult)) {
+      // if is true execute the then statement.
+      execute(stmt.thenStmt);
+    } else if (stmt.elseStmt != null) {
+      // else execute the else statement, if there is one.
+      execute(stmt.elseStmt);
+    }
+    return null;
+  }
   private void execute(Stmt stmt) {
     stmt.accept(this);
   }
