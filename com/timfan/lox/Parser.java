@@ -118,7 +118,7 @@ public class Parser {
     return assignment();
   }
   private Expr assignment() {
-    Expr expr = equality();
+    Expr expr = logicOr();
     if (match(TokenType.EQUAL)) {
       Token equals = previous();
       Expr value = assignment();
@@ -142,6 +142,24 @@ public class Parser {
         // we give it, because we reported to it that there was a parse error.
       }
     }
+    return expr;
+  }
+  private Expr logicOr() {
+    Expr expr = logicAnd();
+    while (match(TokenType.OR)) {
+      Token operator = previous(); // the OR token.
+      Expr right = logicAnd();
+      return new Expr.Logic(expr, operator, right);
+    } 
+    return expr;
+  }
+  private Expr logicAnd() {
+    Expr expr = equality();
+    while (match(TokenType.AND)) {
+      Token operator = previous(); // the AND token.
+      Expr right = equality();
+      return new Expr.Logic(expr, operator, right);
+    } 
     return expr;
   }
   /**

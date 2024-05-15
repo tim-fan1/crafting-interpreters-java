@@ -77,6 +77,19 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     return null;
   }
   @Override
+  public Object visitLogicExpr(Expr.Logic expr) {
+    // make sure evaluate either left or right only once.
+    Object left = evaluate(expr.left);
+    // first check if we can short circuit.
+    if (expr.operator.type == TokenType.AND) {
+      if (!isTruthy(left)) return Boolean.FALSE;
+    } else /* if type is OR */ {
+      if (isTruthy(left)) return Boolean.TRUE;
+    }
+    // we can't short circuit.
+    return isTruthy(evaluate(expr.right));
+  }
+  @Override
   public Object visitAssignExpr(Expr.Assign expr) {
     Token identifier = expr.identifier;
     Object value = evaluate(expr.value);
