@@ -215,12 +215,10 @@ public class Parser {
    */
   private Token consume(TokenType type, String message) {
     if (peek().type == type) {
-      Lox.error(peek(), message);
-      throw new ParseError();
-    } else /* if peek().type != type */ {
-      // consume token, advancing current, and return the consumed token.
       return advance();
     }
+    Lox.error(peek(), message);
+    throw new ParseError();
   }
   /**
    * @param types Check if the current token matches any of the types in types.
