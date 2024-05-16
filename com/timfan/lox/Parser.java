@@ -26,6 +26,7 @@ public class Parser {
   private Stmt declaration() {
     try {
       if (match(TokenType.VAR)) return varDeclaration();
+      else if (match(TokenType.FUN)) return funDeclaration("function");
       return statement();
     } catch (ParseError error) {
       // handle ParseError gracefully.
@@ -35,6 +36,27 @@ public class Parser {
       // reporting this parse error to the Lox instance).
       return null;
     }
+  }
+  /**
+   * @param kind the kind of function, (function | class).
+   */
+  private Stmt funDeclaration(String kind) {
+    Token identifier = consume(TokenType.IDENTIFIER, "Expect " + kind + " name.");
+    consume(TokenType.LEFT_PAREN, "Expect '(' after " + kind + " name.");
+    List<Token> parameters = new ArrayList<>();
+    if (peek().type != TokenType.RIGHT_PAREN) {
+      do {
+        if (parameters.size() >= 255) {
+          Lox.error(peek(), "Can't have more than 255 parameters");
+          throw new ParseError();
+        }
+        parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name."));
+      } while (match(TokenType.COMMA));
+    }
+    consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+    consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " body.");
+    List<Stmt> body = block();
+    return new Stmt.Function(identifier, parameters, body);
   }
   /**
    * Used to handle ParseError gracefully. Instead of exiting the parser,
@@ -85,7 +107,7 @@ public class Parser {
     } else if (match(TokenType.WHILE)) {
       return whileStatement();
     } else if (match(TokenType.LEFT_BRACE)) {
-      return blockStatement();
+      return new Stmt.Block(block());
     } else /* if is expression statement. */ {
       return expressionStatement();
     }
@@ -161,13 +183,13 @@ public class Parser {
     }
     return new Stmt.If(condition, thenStmt, elseStmt);
   }
-  private Stmt blockStatement() {
+  private List<Stmt> block() {
     List<Stmt> statements = new ArrayList<>();
     while (peek().type != TokenType.RIGHT_BRACE && !isAtEnd()) {
       statements.add(declaration());
     }
     consume(TokenType.RIGHT_BRACE, "Expect } at end of block.");
-    return new Stmt.Block(statements);
+    return statements;
   }
   private Stmt printStatement() {
     Expr expr = expression();
@@ -289,8 +311,37 @@ public class Parser {
       Expr right = unary();
       return new Expr.Unary(operator, right);
     } else {
-      return primary();
+      return call();
     }
+  }
+  private Expr call() {
+    Expr expr = primary();
+    while (true) {
+      // since the next token is a (, expr should be treated as a function,
+      if (match(TokenType.LEFT_PAREN)) {
+        // so call expr on the arguments following expr.
+        expr = finishCall(expr);
+      } else {
+        break;
+      }
+    }
+    return expr;
+  }
+  private Expr finishCall(Expr callee) {
+    List<Expr> arguments = new ArrayList<>();
+    if (peek().type != TokenType.RIGHT_PAREN) {
+      // there is at least one argument.
+      do {
+        // add the first, and then keep adding more while next token is comma.
+        if (arguments.size() >= 255) {
+          Lox.error(peek(), "Can't have more than 255 arguments.");
+          throw new ParseError();
+        }
+        arguments.add(expression());
+      } while (match(TokenType.COMMA));
+    }
+    Token paren = consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.");
+    return new Expr.Call(callee, paren, arguments);
   }
   /**
    * e.g. 2, "2", (a + b * c - d).

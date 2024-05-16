@@ -18,6 +18,7 @@ public class GenerateAst {
     // and own constructors and own methods.
     defineAst(outputDir, "Expr", Arrays.asList(
       "Binary   : Expr left, Token operator, Expr right",
+      "Call     : Expr callee, Token paren, List<Expr> arguments",
       "Grouping : Expr expression",
       "Literal  : Object value",
       "Unary    : Token operator, Expr right",
@@ -27,6 +28,7 @@ public class GenerateAst {
     ));
     defineAst(outputDir, "Stmt", Arrays.asList(
       "Expression       : Expr expression",
+      "Function         : Token identifier, List<Token> params, List<Stmt> body",
       "Print            : Expr expression", 
       "VarDeclaration   : Token identifier, Expr initialiser",
       "Block            : List<Stmt> statements",

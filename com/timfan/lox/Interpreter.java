@@ -1,5 +1,6 @@
 package com.timfan.lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,7 +8,20 @@ import java.util.List;
  * and also the Expr objects within those Stmt objects.
  */
 class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
-  Environment environment = new Environment();
+  final Environment globals = new Environment();
+  private Environment environment = globals;
+  Interpreter() {
+    globals.define("clock", new LoxCallable() {
+      @Override
+      public int arity() { return 0; }
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        return (double)System.currentTimeMillis() / 1000.0;
+      }
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
+  }
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
     Expr condition = stmt.condition;
@@ -45,6 +59,14 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     } 
   }
   @Override
+  public Void visitFunctionStmt(Stmt.Function stmt) {
+    // to interpret the given function declaration,
+    LoxFunction function = new LoxFunction(stmt, environment);
+    // add it to the current namespace, ready for use in a visitCallExpr() call.
+    environment.define(stmt.identifier.lexeme, function);
+    return null;
+  }
+  @Override
   public Void visitBlockStmt(Stmt.Block stmt) {
     // we are in the global environment right now, this.environment is the global environment.
     // save reference to global environment so that interpreter can change 
@@ -52,7 +74,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     executeBlock(stmt.statements, new Environment(environment));
     return null;
   }
-  private void executeBlock(List<Stmt> statements, Environment local) {
+  public void executeBlock(List<Stmt> statements, Environment local) {
     try {
       this.environment = local;
       for (Stmt statement : statements) {
@@ -84,6 +106,22 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     // evaluate the expression within this statement, and print out the result.
     System.out.println(stringify(evaluate(stmt.expression)));
     return null;
+  }
+  @Override
+  public Object visitCallExpr(Expr.Call expr) {
+    Object callee = evaluate(expr.callee);
+    List<Object> arguments = new ArrayList<>();
+    for (Expr argument : expr.arguments) {
+      arguments.add(evaluate(argument));
+    }
+    if (!(callee instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+    }
+    LoxCallable function = (LoxCallable)callee;
+    if (arguments.size() != function.arity()) {
+      throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments but got " + arguments.size() + ".");
+    }
+    return function.call(this, arguments);
   }
   @Override
   public Object visitLogicExpr(Expr.Logic expr) {
