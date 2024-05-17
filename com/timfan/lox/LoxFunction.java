@@ -4,10 +4,25 @@ import java.util.List;
 
 class LoxFunction implements LoxCallable {
   private final Stmt.Function declaration;
-  // private final Environment closure;
-  LoxFunction(Stmt.Function declaration/*, Environment closure*/) {
+  private final Environment closure; // which environment does this function declaration belong to?
+                                     // what environment closes over this function declaration?
+                                     // because, if this function declaration's body code relies on 
+                                     // definitions contained within that environment, the environment 
+                                     // that closes around this function -- so, if this function relies 
+                                     // on definitions which are not contained within the body code 
+                                     // itself -- it would need a reference to that environment in order 
+                                     // to work properly, it would need a reference to that environment 
+                                     // that closes over it to work properly, it would need a reference 
+                                     // to its closure.
+                                     //
+                                     // TODO: maintaining static scoping for all var and fun declarations.
+                                     // while implementing closures in this way, make sure that we 
+                                     // maintain a static scoping for all our var and fun declarations, 
+                                     // so that a variable expression evaluation can only resolve to 
+                                     // variables declared before it preceding it in the source code.
+  LoxFunction(Stmt.Function declaration, Environment closure) {
     this.declaration = declaration;
-    // this.closure = closure;
+    this.closure = closure;
   }
   @Override
   public int arity() {
@@ -15,7 +30,7 @@ class LoxFunction implements LoxCallable {
   }
   @Override
   public Object call(Interpreter interpreter, List<Object> arguments) {
-    Environment local = new Environment(interpreter.globals);
+    Environment local = new Environment(closure);
     for (int i = 0; i < declaration.params.size(); i++) {
       local.define(declaration.params.get(i).lexeme, arguments.get(i));
     }

@@ -59,9 +59,11 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   }
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
+    // this function belongs to the current environment, 
+    // its closure is this current environment.
+    LoxFunction function = new LoxFunction(stmt, environment);
     // to interpret the given function declaration,
-    LoxFunction function = new LoxFunction(stmt/*, environment*/);
-    // add it to the current namespace, ready for use in a visitCallExpr() call.
+    // add it to the current namespace, so that it is ready in a visitCallExpr().
     environment.define(stmt.identifier.lexeme, function);
     return null;
   }
