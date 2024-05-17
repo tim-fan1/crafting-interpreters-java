@@ -4,10 +4,10 @@ import java.util.List;
 
 class LoxFunction implements LoxCallable {
   private final Stmt.Function declaration;
-  private final Environment closure;
-  LoxFunction(Stmt.Function declaration, Environment closure) {
+  // private final Environment closure;
+  LoxFunction(Stmt.Function declaration/*, Environment closure*/) {
     this.declaration = declaration;
-    this.closure = closure;
+    // this.closure = closure;
   }
   @Override
   public int arity() {
@@ -15,11 +15,16 @@ class LoxFunction implements LoxCallable {
   }
   @Override
   public Object call(Interpreter interpreter, List<Object> arguments) {
-    Environment local = new Environment(closure);
+    Environment local = new Environment(interpreter.globals);
     for (int i = 0; i < declaration.params.size(); i++) {
       local.define(declaration.params.get(i).lexeme, arguments.get(i));
     }
-    interpreter.executeBlock(declaration.body, local);
+    try {
+      interpreter.executeBlock(declaration.body, local);
+    } catch (Return returnException) {
+      return returnException.value;
+    }
+    // function call finished without any explicit return statement.
     return null;
   }
   @Override

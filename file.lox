@@ -1,8 +1,17 @@
-fun sayHi(first, last) {
-  print "Hi, " + first + " " + last + "!";
+// fun sayHi(first, last) {
+//   print "Hi, " + first + " " + last + "!";
+// }
+// fun sayHo(first, last, test) {
+//   sayHi("first", "last");
+//   print "Ho, " + first + " " + last + " " + test + "!";
+// }
+// sayHo("hello", "world", "test");
+
+fun fib(n) {
+  if (n <= 1) return n;
+  return fib(n - 2) + fib(n - 1);
 }
-fun sayHo(first, last, test) {
-  sayHi("first", "last");
-  print "Ho, " + first + last + " " + test + "!";
+
+for (var i = 0; i < 20; i = i + 1) {
+  print fib(i);
 }
-sayHo("hello", "world", "test");

@@ -34,6 +34,7 @@ abstract class Stmt {
     R visitBlockStmt(Block stmt);
     R visitIfStmt(If stmt);
     R visitWhileStmt(While stmt);
+    R visitReturnStmt(Return stmt);
   }
   abstract <R> R accept(Visitor<R> visitor);
   static class Expression extends Stmt {
@@ -116,6 +117,18 @@ abstract class Stmt {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitWhileStmt(this);
+    }
+  }
+  static class Return extends Stmt {
+    Return(Token keyword, Expr value) {
+      this.keyword = keyword;
+      this.value = value;
+    }
+    final Token keyword;
+    final Expr value;
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitReturnStmt(this);
     }
   }
 }

@@ -99,6 +99,8 @@ public class Parser {
       return printStatement();
     } else if (match(TokenType.IF)) {
       return ifStatement();
+    } else if (match(TokenType.RETURN)) {
+      return returnStatement();
     } else if (match(TokenType.FOR)) {
       return forStatement();
     } else if (match(TokenType.WHILE)) {
@@ -109,8 +111,17 @@ public class Parser {
       return expressionStatement();
     }
   }
+  private Stmt returnStatement() {
+    Token keyword = previous(); // is the return token.
+    Expr value = null;
+    if (peek().type != TokenType.SEMICOLON) {
+      value = expression();
+    }
+    consume(TokenType.SEMICOLON, "Expect ; after return value.");
+    return new Stmt.Return(keyword, value);
+  }
   private Stmt forStatement() {
-    consume(TokenType.LEFT_PAREN, "Expect ( after if keyword.");
+    consume(TokenType.LEFT_PAREN, "Expect ( after for keyword.");
 
     // creating the parts of a for loop statement.
 
@@ -311,6 +322,11 @@ public class Parser {
       return call();
     }
   }
+  /**
+   * e.g. fib(n).
+   * call -> primary "(" arguments? ")"
+   * arguments -> expression ( "," expression )*
+   */
   private Expr call() {
     Expr expr = primary();
     while (true) {

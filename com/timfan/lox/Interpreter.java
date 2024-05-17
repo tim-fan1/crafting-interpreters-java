@@ -32,6 +32,11 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     } 
   }
   @Override
+  public Void visitReturnStmt(Stmt.Return stmt) {
+    // return to the instruction that called the function we are in right now.
+    throw new Return(evaluate(stmt.value));
+  }
+  @Override
   public Void visitWhileStmt(Stmt.While stmt) {
     Expr condition = stmt.condition;
     Stmt body = stmt.body;
@@ -55,20 +60,47 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
     // to interpret the given function declaration,
-    LoxFunction function = new LoxFunction(stmt, environment);
+    LoxFunction function = new LoxFunction(stmt/*, environment*/);
     // add it to the current namespace, ready for use in a visitCallExpr() call.
     environment.define(stmt.identifier.lexeme, function);
     return null;
   }
   @Override
   public Void visitBlockStmt(Stmt.Block stmt) {
-    // we are in the global environment right now, this.environment is the global environment.
-    // save reference to global environment so that interpreter can change 
-    // this.environment back to the global environment after finishing executing block.
+    // this block will run in an environment that has this.environment as its parent.
     executeBlock(stmt.statements, new Environment(environment));
     return null;
   }
   public void executeBlock(List<Stmt> statements, Environment local) {
+    /**
+     * it's tempting to instead write:
+     * 
+     * Environment previous = local.parent;
+     * 
+     * instead of:
+     * 
+     * Environment previous = this.environment;
+     * 
+     * given that in visitBlockStmt, local.parent is set to be 
+     * the current environment which is this.environment.
+     * 
+     * the issue is, is that when functions are called through LoxFunction.call():
+     * 
+     * (1) the functions should have their parent be the global environment, 
+     *     so that we can allow for multiple instances of the same function running
+     *     simultaneouly, and not have any name collisions between those instances, and;
+     * 
+     * (2) when we return from finishing calling a function,
+     *     we want to return to the environment of the code that called the function,,, 
+     *     which is not necessarily the global environment!!!
+     * 
+     * so we can't just blindly return to the function's parent environment, which will
+     * always be the global environment! instead we should return to the environment 
+     * that the code that called the function is in, in other words, saving the current
+     * this.environment, and reverting back to it after finishing calling the function,
+     * after finishing executing the block statement. 
+     */
+    Environment previous = this.environment;
     try {
       this.environment = local;
       for (Stmt statement : statements) {
@@ -76,7 +108,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       }
     } finally {
       // finished executing block, revert environment back.
-      this.environment = local.parent;
+      this.environment = previous;
     }
   } 
   @Override
@@ -197,7 +229,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       case TokenType.MINUS:
         // make sure value is a Double.
         checkNumberOperand(expr.operator, value);
-        return -(double)value;
+        return Double.valueOf(-(double)value);
       case TokenType.BANG:
         // in Lox all objects are either truthy or falsey, so can negate value no matter what object it is.
         return Boolean.valueOf(!isTruthy(value));
