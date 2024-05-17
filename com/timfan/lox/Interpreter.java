@@ -22,6 +22,15 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       public String toString() { return "<native fn>"; }
     });
   }
+  public void interpret(List<Stmt> statements) {
+    try {
+      for (Stmt statement : statements) {
+        execute(statement);
+      }
+    } catch (RuntimeError error) {
+      Lox.runtimeError(error);
+    } 
+  }
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
     Expr condition = stmt.condition;
@@ -42,21 +51,6 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       execute(stmt.elseStmt);
     }
     return null;
-  }
-  private void execute(Stmt stmt) {
-    stmt.accept(this);
-  }
-  private Object evaluate(Expr expr) {
-    return expr.accept(this);
-  }
-  public void interpret(List<Stmt> statements) {
-    try {
-      for (Stmt statement : statements) {
-        execute(statement);
-      }
-    } catch (RuntimeError error) {
-      Lox.runtimeError(error);
-    } 
   }
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
@@ -264,5 +258,11 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       }
     }
     return value.toString();
+  }
+  private void execute(Stmt stmt) {
+    stmt.accept(this);
+  }
+  private Object evaluate(Expr expr) {
+    return expr.accept(this);
   }
 }

@@ -20,9 +20,6 @@ public class Parser {
     }
     return statements;
   }
-  private boolean isAtEnd() {
-    return peek().type == TokenType.EOF;
-  }
   private Stmt declaration() {
     try {
       if (match(TokenType.VAR)) return varDeclaration();
@@ -35,6 +32,31 @@ public class Parser {
       // execute the statements generated, (we made sure of this by 
       // reporting this parse error to the Lox instance).
       return null;
+    }
+  }
+  private void synchronise() {
+    advance();
+    while (!isAtEnd()) {
+      if (previous().type == TokenType.SEMICOLON) {
+        // we have just moved past the next semicolon seen, continue parsing from here.
+        return;
+      }
+      switch (peek().type) {
+        // current is at the start of a new declaration or statement,
+        case TokenType.CLASS:
+        case TokenType.FUN:
+        case TokenType.VAR:
+        case TokenType.FOR:
+        case TokenType.IF:
+        case TokenType.WHILE:
+        case TokenType.PRINT:
+        case TokenType.RETURN:
+          // continue parsing from here.
+          return;
+        default:
+          break;
+      }
+      advance();
     }
   }
   /**
@@ -63,31 +85,6 @@ public class Parser {
    * continue parsing from the next statement or declaration (marked by the next 
    * semicolon seen or the next start-of new declaration or statement seen).
    */
-  private void synchronise() {
-    advance();
-    while (!isAtEnd()) {
-      if (previous().type == TokenType.SEMICOLON) {
-        // we have just moved past the next semicolon seen, continue parsing from here.
-        return;
-      }
-      switch (peek().type) {
-        // current is at the start of a new declaration or statement,
-        case TokenType.CLASS:
-        case TokenType.FUN:
-        case TokenType.VAR:
-        case TokenType.FOR:
-        case TokenType.IF:
-        case TokenType.WHILE:
-        case TokenType.PRINT:
-        case TokenType.RETURN:
-          // continue parsing from here.
-          return;
-        default:
-          break;
-      }
-      advance();
-    }
-  }
   private Stmt varDeclaration() {
     Token identifier = consume(TokenType.IDENTIFIER, "Expect variable name.");
     Expr initialiser = null; 
@@ -423,5 +420,8 @@ public class Parser {
    */
   private Token peek() {
     return tokens.get(current);
+  }
+  private boolean isAtEnd() {
+    return peek().type == TokenType.EOF;
   }
 }
