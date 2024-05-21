@@ -191,7 +191,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       globals.assign(identifier, value);
     } else {
       // go to the specific local environment that the user intends.
-      ancestor(depth).values.put(identifier.lexeme, value);
+      ancestor(depth).assign(identifier, value);
     }
     return value;
   }
@@ -204,7 +204,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       return globals.get(expr.identifier);
     } else {
       // go to the specific local environment that the user intends.
-      return ancestor(depth).values.get(identifier.lexeme);
+      return ancestor(depth).get(identifier);
     }
   }
   @Override

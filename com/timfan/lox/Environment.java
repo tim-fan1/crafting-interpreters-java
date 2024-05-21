@@ -12,7 +12,7 @@ import java.util.Map;
  */
 class Environment {
   final Environment parent;
-  final Map<String, Object> values = new HashMap<>();
+  private final Map<String, Object> values = new HashMap<>();
   Environment() {
     // the global variable environment.
     parent = null;
