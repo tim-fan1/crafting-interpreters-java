@@ -218,30 +218,33 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
           return (String)left + (String)right;
         }
         if ((left instanceof Double) && (right instanceof Double)) {
-          return (Double)left + (Double)right;
+          return (double)left + (double)right;
         }
         throw new RuntimeError(operator, "Can only add two numbers or two strings together");
       case TokenType.MINUS:
         checkNumberOperand(operator, left, right);
-        return (Double)left - (Double)right;
+        return (double)left - (double)right;
       case TokenType.STAR:
         checkNumberOperand(operator, left, right);
-        return (Double)left * (Double)right;
+        return (double)left * (double)right;
       case TokenType.SLASH:
         checkNumberOperand(operator, left, right);
-        return (Double)left / (Double)right;
+        return (double)left / (double)right;
       case TokenType.LESS:
         checkNumberOperand(operator, left, right);
-        return (Double)left < (Double)right;
+        return (double)left < (double)right;
       case TokenType.GREATER:
         checkNumberOperand(operator, left, right);
-        return (Double)left > (Double)right;
+        return (double)left > (double)right;
       case TokenType.LESS_EQUAL:
         checkNumberOperand(operator, left, right);
-        return (Double)left <=(Double)right;
+        return (double)left <= (double)right;
       case TokenType.GREATER_EQUAL:
         checkNumberOperand(operator, left, right);
-        return (Double)left >=(Double)right;
+        return (double)left >= (double)right;
+      case TokenType.EQUAL_EQUAL:
+        checkNumberOperand(operator, left, right);
+        return (double) left == (double)right;
       default:
         break;
     }
