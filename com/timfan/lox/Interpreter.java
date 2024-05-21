@@ -1,7 +1,9 @@
 package com.timfan.lox;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interpreter is a client that wants to operate on both Stmt objects, 
@@ -10,6 +12,9 @@ import java.util.List;
 class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   final Environment globals = new Environment();
   private Environment environment = globals;
+  private final Map<Expr, Integer> locals = new HashMap<>(); // Resolver letting us know how deep in the environment 
+                                                             // chain to search to find the intended variable declaration 
+                                                             // for each variable reference in the source code.
   Interpreter() {
     globals.define("clock", new LoxCallable() {
       @Override
@@ -21,6 +26,9 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       @Override
       public String toString() { return "<native fn>"; }
     });
+  }
+  public void resolve(Expr expr, int depth) {
+    locals.put(expr, depth);
   }
   public void interpret(List<Stmt> statements) {
     try {
@@ -164,16 +172,40 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     // we can't short circuit.
     return isTruthy(evaluate(expr.right));
   }
+  private Environment ancestor(int depth) {
+    // go depth levels into the environment chain, 
+    // and return that depth'st level environment.
+    Environment result = environment;
+    for (int i = 0; i < depth; i++) {
+      result = result.parent;
+    }
+    return result;
+  }
   @Override
   public Object visitAssignExpr(Expr.Assign expr) {
     Token identifier = expr.identifier;
     Object value = evaluate(expr.value);
-    environment.assign(identifier, value);
+    Integer depth = locals.get(expr);
+    if (depth == null) {
+      // try the global environment.
+      globals.assign(identifier, value);
+    } else {
+      // go to the specific local environment that the user intends.
+      ancestor(depth).values.put(identifier.lexeme, value);
+    }
     return value;
   }
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
-    return environment.get(expr.identifier);
+    Token identifier = expr.identifier;
+    Integer depth = locals.get(expr);
+    if (depth == null) {
+      // try the global environment.
+      return globals.get(expr.identifier);
+    } else {
+      // go to the specific local environment that the user intends.
+      return ancestor(depth).values.get(identifier.lexeme);
+    }
   }
   @Override
   public Object visitBinaryExpr(Expr.Binary expr) {

@@ -48,6 +48,9 @@ public class Lox {
     List<Token> tokens = new Scanner(source).scanTokens();
     List<Stmt> statements = new Parser(tokens).parse();
     if (hadError) return;
+    Resolver resolver = new Resolver(interpreter);
+    resolver.resolve(statements);
+    if (hadError) return;
     // all syntax is good, no scanning errors or parsing errors reported. 
     interpreter.interpret(statements);
   }
