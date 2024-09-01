@@ -1,0 +1,22 @@
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA();
+  var a = "block";
+  if (true) {
+    {
+      {
+        {
+          {
+            {
+              showA();
+            }
+          }
+        }
+      }
+    }
+  }
+}
