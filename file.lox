@@ -1,22 +1,46 @@
-var a = "global";
-{
-  fun showA() {
-    print a;
+fun fib(n) {
+  if (n == 1 or n == 2) {
+    return 1;
   }
+  return fib(n - 1) + fib(n - 2);
+}
 
-  showA();
-  var a = "block";
-  if (true) {
-    {
-      {
-        {
-          {
-            {
-              showA();
-            }
-          }
-        }
-      }
-    }
+fun fib_recursive(n) {
+  print "Printing fibonacci numbers using O(exp n) strategy.";
+  for (var i = 1; i <= n; i = i + 1) {
+    print fib(i);
   }
+}
+
+fun fib_iterative(n) {
+  print "Printing fibonacci numbers using O(n) strategy.";
+  var first = 1;
+  var second = 1;
+  var third;
+  for (var i = 1; i <= 2; i = i + 1) {
+    // The first two are 1.
+    print 1;
+  }
+  for (var i = 3; i <= n; i = i + 1) {
+    // The rest are summing up the previous two.
+    third = first + second;
+    print third;
+
+    // Store the two that will be used in next iteration.
+    first = second;
+    second = third;
+  }
+}
+
+// Print the first 30 fibonacci numbers.
+fun main() {
+  fib_recursive(30);
+  fib_iterative(30);
+  return 0;
+}
+
+if (main() != 0) {
+  print "An error occurred!";
+} else {
+  print "Success!";
 }
