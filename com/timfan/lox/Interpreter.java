@@ -245,6 +245,9 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       case TokenType.EQUAL_EQUAL:
         checkNumberOperand(operator, left, right);
         return (double) left == (double)right;
+      case TokenType.BANG_EQUAL:
+        checkNumberOperand(operator, left, right);
+        return (double) left != (double)right;
       default:
         break;
     }
