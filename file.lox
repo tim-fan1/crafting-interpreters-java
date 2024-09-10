@@ -8,7 +8,12 @@ fun fib(n) {
 fun fib_recursive(n) {
   print "Printing fibonacci numbers using O(exp n) strategy.";
   for (var i = 1; i <= n; i = i + 1) {
-    print fib(i);
+    var fibb = fib(i);
+    if (fibb > 999) {
+      break;
+    } else {
+      print fibb;
+    }
   }
 }
 
