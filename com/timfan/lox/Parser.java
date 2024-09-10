@@ -101,6 +101,10 @@ public class Parser {
       return ifStatement();
     } else if (match(TokenType.RETURN)) {
       return returnStatement();
+    } else if (match(TokenType.BREAK)) {
+      return breakStatement();
+    } else if (match(TokenType.CONTINUE)) {
+      return continueStatement();
     } else if (match(TokenType.FOR)) {
       return forStatement();
     } else if (match(TokenType.WHILE)) {
@@ -110,6 +114,16 @@ public class Parser {
     } else /* if is expression statement. */ {
       return expressionStatement();
     }
+  }
+  private Stmt breakStatement() {
+    Token keyword = previous(); // is the break token.
+    consume(TokenType.SEMICOLON, "Expect ; after break statement.");
+    return new Stmt.Break(keyword);
+  }
+  private Stmt continueStatement() {
+    Token keyword = previous(); // is the continue token.
+    consume(TokenType.SEMICOLON, "Expect ; after continue statement.");
+    return new Stmt.Continue(keyword);
   }
   private Stmt returnStatement() {
     Token keyword = previous(); // is the return token.

@@ -147,6 +147,14 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     return null;
   }
   @Override
+  public Void visitBreakStmt(Stmt.Break stmt) {
+    return null;
+  }
+  @Override
+  public Void visitContinueStmt(Stmt.Continue stmt) {
+    return null;
+  }
+  @Override
   public Void visitVariableExpr(Expr.Variable expr) {
     if (!scopes.empty() && scopes.peek().get(expr.identifier.lexeme) == Boolean.FALSE) {
       // for an edge case like 

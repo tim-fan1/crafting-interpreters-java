@@ -35,6 +35,8 @@ abstract class Stmt {
     R visitIfStmt(If stmt);
     R visitWhileStmt(While stmt);
     R visitReturnStmt(Return stmt);
+    R visitBreakStmt(Break stmt);
+    R visitContinueStmt(Continue stmt);
   }
   abstract <R> R accept(Visitor<R> visitor);
   static class Expression extends Stmt {
@@ -129,6 +131,26 @@ abstract class Stmt {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitReturnStmt(this);
+    }
+  }
+  static class Break extends Stmt {
+    Break(Token keyword) {
+      this.keyword = keyword;
+    }
+    final Token keyword;
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitBreakStmt(this);
+    }
+  }
+  static class Continue extends Stmt {
+    Continue(Token keyword) {
+      this.keyword = keyword;
+    }
+    final Token keyword;
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitContinueStmt(this);
     }
   }
 }

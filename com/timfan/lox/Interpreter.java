@@ -42,14 +42,29 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   @Override
   public Void visitReturnStmt(Stmt.Return stmt) {
     // return to the instruction that called the function we are in right now.
+    // See LoxFunction.java/call.
     throw new Return(evaluate(stmt.value));
+  }
+  @Override
+  public Void visitBreakStmt(Stmt.Break stmt) {
+    throw new Break();
+  }
+  @Override
+  public Void visitContinueStmt(Stmt.Continue stmt) {
+    throw new Continue();
   }
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
     Expr condition = stmt.condition;
     Stmt body = stmt.body;
     while (isTruthy(evaluate(condition))) {
-      execute(body);
+      try {
+        execute(body);
+      } catch (Break breakException) {
+        break;
+      } catch (Continue continueException) {
+        continue;
+      }
     }
     return null;
   }

@@ -34,7 +34,9 @@ public class GenerateAst {
       "Block            : List<Stmt> statements",
       "If               : Expr condition, Stmt thenStmt, Stmt elseStmt",
       "While            : Expr condition, Stmt body",
-      "Return           : Token keyword, Expr value"
+      "Return           : Token keyword, Expr value",
+      "Break            : Token keyword",
+      "Continue         : Token keyword"
     ));
   }
   private static void defineAst(
