@@ -15,7 +15,7 @@ Replacing file.lox with the Lox program that want to run.
 An example file.lox is provided, which prints out the first 30 fibonacci numbers.
  
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/910c12dc-98cf-4495-bb45-8308b58336d5" />
+  <img src="https://github.com/user-attachments/assets/2b89220e-04ac-4c54-a3b7-8dfd0eda6bc3" />
 </p>
 
 [1]: https://craftinginterpreters.com/the-lox-language.html
