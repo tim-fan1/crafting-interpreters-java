@@ -17,14 +17,16 @@ public class GenerateAst {
     // each with their own fields (e.g., Object value, for the Literal class)
     // and own constructors and own methods.
     defineAst(outputDir, "Expr", Arrays.asList(
-      "Binary   : Expr left, Token operator, Expr right",
-      "Call     : Expr callee, Token paren, List<Expr> arguments",
-      "Grouping : Expr expression",
-      "Literal  : Object value",
-      "Unary    : Token operator, Expr right",
-      "Variable : Token identifier",
-      "Assign   : Token identifier, Expr value",
-      "Logic    : Expr left, Token operator, Expr right"
+      "Binary    : Expr left, Token operator, Expr right",
+      "Call      : Expr callee, Token paren, List<Expr> arguments",
+      "Grouping  : Expr expression",
+      "Literal   : Object value",
+      "Unary     : Token operator, Expr right",
+      "Variable  : Token identifier",
+      "Assign    : Token identifier, Expr value",
+      "Logic     : Expr left, Token operator, Expr right",
+      "Array     : List<Expr> values",
+      "Subscript : Expr array, Token bracket, Expr index"
     ));
     defineAst(outputDir, "Stmt", Arrays.asList(
       "Expression       : Expr expression",

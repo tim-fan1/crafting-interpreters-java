@@ -34,7 +34,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
    * for each declaration, it adds that declaration to the environment at the top of stack.
    * 
    * and for each reference, it searches through the stack starting from the top of stack,
-   * for where the declaration this references wants to use is. and after finding it, it 
+   * for where the declaration this reference wants to use is. and after finding it, it 
    * lets the interpreter know how deep to look to find that declaration.
    */
   void resolve(Stmt stmt) {
@@ -89,7 +89,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     // add the name of this function to the current local scope.
     declare(stmt.identifier);
     define(stmt.identifier);
-    // let our resolver know that we are know entering the body of a local function.
+    // let our resolver know that we are now entering the body of a local function.
     FunctionType previous = currentFunction;
     currentFunction = FunctionType.LOCAL;
     beginScope();
@@ -185,6 +185,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         interpreter.resolve(expr, depth); // when visiting this specific varRefExpr node during interpretation, 
                                           // the interpreter will know they should search depth number of levels up the 
                                           // environment chain to find the declaration the user wants to use.
+        break;
       }
     }
     return null;
@@ -201,6 +202,19 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     for (Expr argument : expr.arguments) {
       resolve(argument);
     }
+    return null;
+  }
+  @Override
+  public Void visitArrayExpr(Expr.Array expr) {
+    for (Expr value : expr.values) {
+      resolve(value);
+    }
+    return null;
+  }
+  @Override
+  public Void visitSubscriptExpr(Expr.Subscript expr) {
+    resolve(expr.array);
+    resolve(expr.index);
     return null;
   }
   @Override

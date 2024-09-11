@@ -338,11 +338,16 @@ public class Parser {
   }
   /**
    * e.g. fib(n).
-   * call -> primary "(" arguments? ")"
+   * call -> primary ( "[" expression "]" ) | "(" arguments? ")" )
    * arguments -> expression ( "," expression )*
    */
   private Expr call() {
     Expr expr = primary();
+    if (match(TokenType.LEFT_BRACKET)) {
+      Expr index = expression();
+      Token bracket = consume(TokenType.RIGHT_BRACKET, "Expect ] after array indexing.");
+      return new Expr.Subscript(expr, bracket, index);
+    }
     while (true) {
       // since the next token is a (, expr should be treated as a function,
       if (match(TokenType.LEFT_PAREN)) {
@@ -384,6 +389,15 @@ public class Parser {
       // once control reaches here, we have to confirm that the next token is a right paren.
       consume(TokenType.RIGHT_PAREN, "Expect ) after expression.");
       return new Expr.Grouping(expr);
+    }
+    if (match(TokenType.LEFT_BRACKET)) {
+      List<Expr> values = new ArrayList<>();
+      values.add(expression());
+      while (match(TokenType.COMMA)) {
+        values.add(expression());
+      }
+      consume(TokenType.RIGHT_BRACKET, "Expect ] to close array declaration.");
+      return new Expr.Array(values);
     }
     if (match(TokenType.IDENTIFIER)) {
       // let the interpreter know that here, 

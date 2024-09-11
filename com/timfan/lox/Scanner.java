@@ -80,6 +80,8 @@ class Scanner {
     // figure out what character current is pointing to.
     char c = advance();
     switch (c) {
+      case '[': addToken(TokenType.LEFT_BRACKET); break;
+      case ']': addToken(TokenType.RIGHT_BRACKET); break;
       case '(': addToken(TokenType.LEFT_PAREN); break;
       case ')': addToken(TokenType.RIGHT_PAREN); break;
       case '{': addToken(TokenType.LEFT_BRACE); break;

@@ -294,6 +294,35 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     // control should not reach here...
     return null;
   }
+  @Override
+  public Object visitArrayExpr(Expr.Array expr) {
+    List<Object> list = new ArrayList<>();
+    for (Expr value : expr.values) {
+      list.add(evaluate(value));
+    }
+    return list;
+  }
+  @SuppressWarnings("unchecked")
+  @Override
+  public Object visitSubscriptExpr(Expr.Subscript expr) {
+    Object listObject = evaluate(expr.array);
+    if (!(listObject instanceof List)) {
+      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] on arrays.");
+    }
+    List<Object> list = (List<Object>)listObject;
+    Object indexObject = evaluate(expr.index);
+    if (!(indexObject instanceof Double)) {
+      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
+    }
+    Double index = (Double)indexObject;
+    if (Math.floor(index) != index) {
+      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
+    }
+    if (index.intValue() < 0 || index.intValue() >= list.size()) {
+      throw new RuntimeError(expr.bracket, "Array index out of bounds.");
+    }
+    return list.get(index.intValue());
+  }
   /**
    * Used for validating operands before an arithmetic unary operation.
    * @throws RuntimeError When operand is not a Double.
