@@ -226,6 +226,9 @@ public class Parser {
   private Expr expression() {
     return assignment();
   }
+  /**
+   * assignment -> IDENTIFIER "=" assignment | logicOr
+   */
   private Expr assignment() {
     Expr expr = logicOr();
     if (match(TokenType.EQUAL)) {
@@ -235,6 +238,11 @@ public class Parser {
         // the thing to the left hand side of the equals sign is an identifier.
         Token identifer = ((Expr.Variable)expr).identifier;
         return new Expr.Assign(identifer, value);
+      } else if (expr instanceof Expr.Subscript) {
+        Expr array = ((Expr.Subscript)expr).array;
+        Expr index = ((Expr.Subscript)expr).index;
+        Token bracket = ((Expr.Subscript)expr).bracket;
+        return new Expr.SubscriptAssign(array, bracket, index, value);
       } else /* if the thing to the left hand side is not an identifier. */ {
         // we have managed to parse through the entire (invalid) assignment 
         // expression and now we are expecting the next token to be a semicolon, 
@@ -253,6 +261,9 @@ public class Parser {
     }
     return expr;
   }
+  /**
+   * logicOr -> logicAnd ( "or" logicAnd )*
+   */
   private Expr logicOr() {
     Expr expr = logicAnd();
     while (match(TokenType.OR)) {
@@ -376,7 +387,7 @@ public class Parser {
     return new Expr.Call(callee, paren, arguments);
   }
   /**
-   * e.g. 2, "2", (a + b * c - d).
+   * e.g. 2, "2", (a + b * c - d), [1, 2, 3, 4].
    * primary -> ( NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" )
    */
   private Expr primary() {

@@ -218,6 +218,13 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     return null;
   }
   @Override
+  public Void visitSubscriptAssignExpr(Expr.SubscriptAssign expr) {
+    resolve(expr.array);
+    resolve(expr.index);
+    resolve(expr.value);
+    return null;
+  }
+  @Override
   public Void visitGroupingExpr(Expr.Grouping expr) {
     resolve(expr.expression);
     return null;

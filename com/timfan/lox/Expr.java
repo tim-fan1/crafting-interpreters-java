@@ -37,6 +37,7 @@ abstract class Expr {
     R visitLogicExpr(Logic expr);
     R visitArrayExpr(Array expr);
     R visitSubscriptExpr(Subscript expr);
+    R visitSubscriptAssignExpr(SubscriptAssign expr);
   }
   abstract <R> R accept(Visitor<R> visitor);
   static class Binary extends Expr {
@@ -157,6 +158,22 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitSubscriptExpr(this);
+    }
+  }
+  static class SubscriptAssign extends Expr {
+    SubscriptAssign(Expr array, Token bracket, Expr index, Expr value) {
+      this.array = array;
+      this.bracket = bracket;
+      this.index = index;
+      this.value = value;
+    }
+    final Expr array;
+    final Token bracket;
+    final Expr index;
+    final Expr value;
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitSubscriptAssignExpr(this);
     }
   }
 }
