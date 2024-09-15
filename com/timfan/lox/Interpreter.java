@@ -1,6 +1,7 @@
 package com.timfan.lox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
                                                              // chain to search to find the intended variable declaration 
                                                              // for each variable reference in the source code.
   Interpreter() {
+    // clock();
     globals.define("clock", new LoxCallable() {
       @Override
       public int arity() { return 0; }
@@ -26,7 +28,67 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       @Override
       public String toString() { return "<native fn>"; }
     });
+    // map(apply, array);
+    globals.define("map", new LoxCallable() {
+      @Override
+      public int arity() { return 2; }
+      @SuppressWarnings("unchecked")
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        Object applyObject = arguments.get(0);
+        Object arrayObject = arguments.get(1);
+        System.out.println(applyObject.getClass());
+        if (!(applyObject instanceof LoxFunction)) {
+          throw new RuntimeError("First argument to map must be a function.");
+        }
+        if (!(arrayObject instanceof List)) {
+          throw new RuntimeError("Second argument to map must be an array.");
+        }
+        LoxFunction apply = (LoxFunction)applyObject;
+        List<Object> array = (List<Object>)arrayObject;
+
+        // Do the map.
+        List<Object> appliedList = new ArrayList<>();
+        for (Object item : array) {
+          appliedList.add(apply.call(interpreter, Arrays.asList(item)));
+        }
+        return appliedList;
+      }
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
+    // filter(filter, array);
+    globals.define("filter", new LoxCallable() {
+      @Override
+      public int arity() { return 2; }
+      @SuppressWarnings("unchecked")
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        Object filterObject = arguments.get(0);
+        Object arrayObject = arguments.get(1);
+        if (!(filterObject instanceof LoxFunction)) {
+          throw new RuntimeError("First argument to filter must be a function.");
+        }
+        if (!(arrayObject instanceof List)) {
+          throw new RuntimeError("Second argument to filter must be an array.");
+        }
+        LoxFunction filter = (LoxFunction)filterObject;
+        List<Object> array = (List<Object>)arrayObject;
+
+        // Do the filter.
+        List<Object> filteredList = new ArrayList<>();
+        for (Object item : array) {
+          if (isTruthy(filter.call(interpreter, Arrays.asList(item)))) {
+            filteredList.add(item);
+          }
+        }
+        return filteredList;
+      }
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
   }
+  
   public void resolve(Expr expr, int depth) {
     locals.put(expr, depth);
   }
