@@ -1,49 +1,22 @@
-var cache = [-1, -1, -1, -1, -1, 
-             -1, -1, -1, -1, -1,
-             -1, -1, -1, -1, -1,
-             -1, -1, -1, -1, -1,
-             -1, -1, -1, -1, -1,
-             -1, -1, -1, -1, -1, -1];
-
-fun fib(n) {
-  if (n == 1 or n == 2) {
-    return 1;
-  }
-  return fib(n - 1) + fib(n - 2);
+fun doubleValue(value) {
+  return value * 2;
 }
 
-fun fib_memo(n) {
-  if (n == 1 or n == 2) {
-    return 1;
-  }
-  if (cache[n] != -1) return cache[n];
-  cache[n] = fib_memo(n - 1) + fib_memo(n - 2);
-  return cache[n];
+fun isLargerThanNine(value) {
+  return value > 9;
 }
 
-fun fib_recursive(n) {
-  print "Printing fibonacci numbers using O(exp n) strategy.";
-  for (var i = 1; i <= n; i = i + 1) {
-    print fib(i);
-  }
+var list = [1,2,3,4,5,6,7,8,9];
+var mappedList = map(doubleValue, list);
+for (var i = 0; i < len(mappedList); i = i + 1) {
+  print mappedList[i];
 }
 
-fun fib_iterative(n) {
-  print "Printing fibonacci numbers using O(n) strategy.";
-  for (var i = 1; i <= n; i = i + 1) {
-    print fib_memo(i);
-  }
-}
+print "";
+print "===";
+print "";
 
-// Print the first 30 fibonacci numbers.
-fun main() {
-  fib_recursive(30);
-  fib_iterative(30);
-  return 0;
-}
-
-if (main() != 0) {
-  print "An error occurred!";
-} else {
-  print "Success!";
+var filteredList = filter(isLargerThanNine, mappedList);
+for (var i = 0; i < len(filteredList); i = i + 1) {
+  print filteredList[i];
 }

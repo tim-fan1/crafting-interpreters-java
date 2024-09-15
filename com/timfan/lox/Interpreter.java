@@ -28,6 +28,21 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       @Override
       public String toString() { return "<native fn>"; }
     });
+    // len(array);
+    globals.define("len", new LoxCallable() {
+      @Override
+      public int arity() { return 1; }
+      @SuppressWarnings("unchecked")
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        Object arrayObject = arguments.get(0);
+        if (!(arrayObject instanceof List)) {
+          throw new RuntimeError("First argument to len must be an array.");
+        }
+        int length = ((List<Object>)arrayObject).size();
+        return (double)length;
+      }
+    });
     // map(apply, array);
     globals.define("map", new LoxCallable() {
       @Override
@@ -37,7 +52,6 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       public Object call(Interpreter interpreter, List<Object> arguments) {
         Object applyObject = arguments.get(0);
         Object arrayObject = arguments.get(1);
-        System.out.println(applyObject.getClass());
         if (!(applyObject instanceof LoxFunction)) {
           throw new RuntimeError("First argument to map must be a function.");
         }
