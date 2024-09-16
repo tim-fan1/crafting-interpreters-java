@@ -45,6 +45,7 @@ public class Parser {
         // current is at the start of a new declaration or statement,
         case TokenType.CLASS:
         case TokenType.FUN:
+        case TokenType.LAMBDA:
         case TokenType.VAR:
         case TokenType.FOR:
         case TokenType.IF:
@@ -224,6 +225,39 @@ public class Parser {
     return new Stmt.Expression(expr);
   }
   private Expr expression() {
+    return lambda();
+  }
+  // lambda (x, y) => { return x + y; }
+  private Expr lambda() {
+    if (match(TokenType.LAMBDA)) {
+      // Get lambda keyword token.
+      Token token = previous();
+
+      // Get parameters.
+      List<Token> parameters = new ArrayList<>();
+      consume(TokenType.LEFT_PAREN, "Expect '(' after lambda keyword.");
+      if (peek().type != TokenType.RIGHT_PAREN) {
+        do {
+          if (parameters.size() >= 255) {
+            Lox.error(peek(), "Can't have more than 255 parameters");
+            throw new ParseError();
+          }
+          parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name."));
+        } while (match(TokenType.COMMA));
+      }
+      consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+
+      // Lambda declarations will use arrow function notation.
+      consume(TokenType.EQUAL, "Expect => arrow after lambda parameters.");
+      consume(TokenType.GREATER, "Expect => arrow after lambda parameters.");
+
+      // Get body.
+      consume(TokenType.LEFT_BRACE, "Expect '{' before lambda body.");
+      List<Stmt> body = block();
+
+      // Return lambda expression.
+      return new Expr.Lambda(new Stmt.Function(token, parameters, body));
+    }
     return assignment();
   }
   /**

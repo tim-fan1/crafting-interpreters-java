@@ -249,6 +249,10 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     return null;
   }
   @Override
+  public Object visitLambdaExpr(Expr.Lambda expr) {
+    return new LoxFunction((Stmt.Function)expr.function, environment);
+  }
+  @Override
   public Object visitCallExpr(Expr.Call expr) {
     Object callee = evaluate(expr.callee);
     List<Object> arguments = new ArrayList<>();

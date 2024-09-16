@@ -155,6 +155,25 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     return null;
   }
   @Override
+  public Void visitLambdaExpr(Expr.Lambda expr) {
+    // let our resolver know that we are now entering the body of a local function.
+    FunctionType previous = currentFunction;
+    currentFunction = FunctionType.LOCAL;
+    beginScope();
+    // then walk through its params code.
+    for (Token param : expr.function.params) {
+      declare(param);
+      define(param);
+    }
+    // then walk through its body code, where return statements in the body 
+    // code are ok because the currentFunction is a local function, not the main.
+    resolve(expr.function.body);
+    endScope();
+    // now revert back current function, which could be the main, but also a non-main.
+    currentFunction = previous;
+    return null;
+  }
+  @Override
   public Void visitVariableExpr(Expr.Variable expr) {
     if (!scopes.empty() && scopes.peek().get(expr.identifier.lexeme) == Boolean.FALSE) {
       // for an edge case like 

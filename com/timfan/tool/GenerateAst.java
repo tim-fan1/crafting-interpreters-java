@@ -27,7 +27,8 @@ public class GenerateAst {
       "Logic     : Expr left, Token operator, Expr right",
       "Array     : List<Expr> values",
       "Subscript : Expr array, Token bracket, Expr index",
-      "SubscriptAssign : Expr array, Token bracket, Expr index, Expr value"
+      "SubscriptAssign : Expr array, Token bracket, Expr index, Expr value",
+      "Lambda    : Stmt.Function function"
     ));
     defineAst(outputDir, "Stmt", Arrays.asList(
       "Expression       : Expr expression",

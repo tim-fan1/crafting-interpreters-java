@@ -38,6 +38,7 @@ abstract class Expr {
     R visitArrayExpr(Array expr);
     R visitSubscriptExpr(Subscript expr);
     R visitSubscriptAssignExpr(SubscriptAssign expr);
+    R visitLambdaExpr(Lambda expr);
   }
   abstract <R> R accept(Visitor<R> visitor);
   static class Binary extends Expr {
@@ -174,6 +175,16 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitSubscriptAssignExpr(this);
+    }
+  }
+  static class Lambda extends Expr {
+    Lambda(Stmt.Function function) {
+      this.function = function;
+    }
+    final Stmt.Function function;
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitLambdaExpr(this);
     }
   }
 }
