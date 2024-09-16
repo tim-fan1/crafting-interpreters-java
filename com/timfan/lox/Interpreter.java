@@ -28,6 +28,17 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       @Override
       public String toString() { return "<native fn>"; }
     });
+    // str(object);
+    globals.define("str", new LoxCallable() {
+      @Override
+      public int arity() { return 1; }
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        return stringify(arguments.get(0));
+      }
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
     // len(array);
     globals.define("len", new LoxCallable() {
       @Override
