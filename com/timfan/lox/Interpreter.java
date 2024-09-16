@@ -32,41 +32,44 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     globals.define("len", new LoxCallable() {
       @Override
       public int arity() { return 1; }
-      @SuppressWarnings("unchecked")
       @Override
       public Object call(Interpreter interpreter, List<Object> arguments) {
-        Object arrayObject = arguments.get(0);
-        if (!(arrayObject instanceof List)) {
+        // Parse array list.
+        if (!(arguments.get(0) instanceof LoxArray)) {
           throw new RuntimeError("First argument to len must be an array.");
         }
-        int length = ((List<Object>)arrayObject).size();
-        return (double)length;
+        LoxArray array = (LoxArray)arguments.get(0);
+
+        // Get its length.
+        return (double)array.list.size();
       }
+      @Override
+      public String toString() { return "<native fn>"; }
     });
     // map(apply, array);
     globals.define("map", new LoxCallable() {
       @Override
       public int arity() { return 2; }
-      @SuppressWarnings("unchecked")
       @Override
       public Object call(Interpreter interpreter, List<Object> arguments) {
-        Object applyObject = arguments.get(0);
-        Object arrayObject = arguments.get(1);
-        if (!(applyObject instanceof LoxFunction)) {
+        // Parse apply function.
+        if (!(arguments.get(0) instanceof LoxFunction)) {
           throw new RuntimeError("First argument to map must be a function.");
         }
-        if (!(arrayObject instanceof List)) {
+        LoxFunction apply = (LoxFunction)arguments.get(0);
+
+        // Parse array list.
+        if (!(arguments.get(1) instanceof LoxArray)) {
           throw new RuntimeError("Second argument to map must be an array.");
         }
-        LoxFunction apply = (LoxFunction)applyObject;
-        List<Object> array = (List<Object>)arrayObject;
+        LoxArray array = (LoxArray)arguments.get(1);
 
-        // Do the map.
+        // Do the mapping of apply onto array.
         List<Object> appliedList = new ArrayList<>();
-        for (Object item : array) {
+        for (Object item : array.list) {
           appliedList.add(apply.call(interpreter, Arrays.asList(item)));
         }
-        return appliedList;
+        return new LoxArray(appliedList);
       }
       @Override
       public String toString() { return "<native fn>"; }
@@ -75,34 +78,34 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     globals.define("filter", new LoxCallable() {
       @Override
       public int arity() { return 2; }
-      @SuppressWarnings("unchecked")
       @Override
       public Object call(Interpreter interpreter, List<Object> arguments) {
-        Object filterObject = arguments.get(0);
-        Object arrayObject = arguments.get(1);
-        if (!(filterObject instanceof LoxFunction)) {
+        // Parse filter function.
+        if (!(arguments.get(0) instanceof LoxFunction)) {
           throw new RuntimeError("First argument to filter must be a function.");
         }
-        if (!(arrayObject instanceof List)) {
+        LoxFunction filter = (LoxFunction)arguments.get(0);
+
+        // Parse array list.
+        if (!(arguments.get(1) instanceof LoxArray)) {
           throw new RuntimeError("Second argument to filter must be an array.");
         }
-        LoxFunction filter = (LoxFunction)filterObject;
-        List<Object> array = (List<Object>)arrayObject;
+        LoxArray array = (LoxArray)arguments.get(1);
 
         // Do the filter.
         List<Object> filteredList = new ArrayList<>();
-        for (Object item : array) {
+        for (Object item : array.list) {
           if (isTruthy(filter.call(interpreter, Arrays.asList(item)))) {
             filteredList.add(item);
           }
         }
-        return filteredList;
+        return new LoxArray(filteredList);
       }
       @Override
       public String toString() { return "<native fn>"; }
     });
   }
-  
+
   public void resolve(Expr expr, int depth) {
     locals.put(expr, depth);
   }
@@ -286,14 +289,16 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     }
     return value;
   }
-  @SuppressWarnings("unchecked")
   @Override
   public Object visitSubscriptAssignExpr(Expr.SubscriptAssign expr) {
-    Object listObject = evaluate(expr.array);
-    if (!(listObject instanceof List)) {
+    // parse array.
+    Object arrayObject = evaluate(expr.array);
+    if (!(arrayObject instanceof LoxArray)) {
       throw new RuntimeError(expr.bracket, "Can only use subscript operator [] on arrays.");
     }
-    List<Object> list = (List<Object>)listObject;
+    List<Object> list = ((LoxArray)arrayObject).list;
+
+    // parse index.
     Object indexObject = evaluate(expr.index);
     if (!(indexObject instanceof Double)) {
       throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
@@ -305,7 +310,11 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     if (index.intValue() < 0 || index.intValue() >= list.size()) {
       throw new RuntimeError(expr.bracket, "Array index out of bounds.");
     }
+
+    // parse value.
     Object value = evaluate(expr.value);
+
+    // assign array at index to value.
     list.set(index.intValue(), value);
     return value;
   }
@@ -399,16 +408,19 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     for (Expr value : expr.values) {
       list.add(evaluate(value));
     }
-    return list;
+    return new LoxArray(list);
   }
-  @SuppressWarnings("unchecked")
+
   @Override
   public Object visitSubscriptExpr(Expr.Subscript expr) {
-    Object listObject = evaluate(expr.array);
-    if (!(listObject instanceof List)) {
+    // parse array.
+    Object arrayObject = evaluate(expr.array);
+    if (!(arrayObject instanceof LoxArray)) {
       throw new RuntimeError(expr.bracket, "Can only use subscript operator [] on arrays.");
     }
-    List<Object> list = (List<Object>)listObject;
+    List<Object> list = ((LoxArray)arrayObject).list;
+
+    // parse index.
     Object indexObject = evaluate(expr.index);
     if (!(indexObject instanceof Double)) {
       throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
@@ -420,6 +432,8 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
     if (index.intValue() < 0 || index.intValue() >= list.size()) {
       throw new RuntimeError(expr.bracket, "Array index out of bounds.");
     }
+
+    // index into array.
     return list.get(index.intValue());
   }
   /**
