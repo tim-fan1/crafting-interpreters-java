@@ -354,26 +354,24 @@ public class Parser {
    * arguments -> expression ( "," expression )*
    */
   private Expr call() {
+    // Get the expression that we will be (call)-ing  or [subscript]-ing.
     Expr expr = primary();
-    if (match(TokenType.LEFT_BRACKET)) {
-      Expr index = expression();
-      Token bracket = consume(TokenType.RIGHT_BRACKET, "Expect ] after array indexing.");
-      Expr subscript = new Expr.Subscript(expr, bracket, index);
-      if (peek().type != TokenType.LEFT_PAREN) {
-        return subscript;
-      }
-      expr = subscript;
-    }
     while (true) {
-      // since the next token is a (, expr should be treated as a function,
+      // And keep calling or subscripting while we can.
       if (match(TokenType.LEFT_PAREN)) {
-        // so call expr on the arguments following expr.
         expr = finishCall(expr);
+      } else if (match(TokenType.LEFT_BRACKET)) {
+        expr = finishSubscript(expr);
       } else {
         break;
       }
     }
     return expr;
+  }
+  private Expr finishSubscript(Expr array) {
+    Expr index = expression();
+    Token bracket = consume(TokenType.RIGHT_BRACKET, "Expect ] after array indexing.");
+    return new Expr.Subscript(array, bracket, index);
   }
   private Expr finishCall(Expr callee) {
     List<Expr> arguments = new ArrayList<>();
