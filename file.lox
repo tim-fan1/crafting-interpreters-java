@@ -1,22 +1,17 @@
-fun doubleValue(value) {
-  return value * 2;
-}
-
-fun isLargerThanNine(value) {
-  return value > 9;
+fun doASpecialFilter(list) {
+  var filteredList = filter(
+    lambda (x) => { return x > 10; },  // Apply this filter (x > 10),
+    map(                               // Onto this list which we will call mappedList,
+      lambda (x) => { return x * 2; }, // Which is the result of applying this map (x * 2),
+      list                             // Onto each element of the given list.
+    ) 
+  );
+  return filteredList;
 }
 
 var list = [1,2,3,4,5,6,7,8,9];
-var mappedList = map(doubleValue, list);
-for (var i = 0; i < len(mappedList); i = i + 1) {
-  print mappedList[i];
-}
-
-print "";
-print "===";
-print "";
-
-var filteredList = filter(isLargerThanNine, mappedList);
-for (var i = 0; i < len(filteredList); i = i + 1) {
-  print filteredList[i];
+list = doASpecialFilter(list);
+for (var i = 0; i < len(list); i = i + 1) {
+  print list[i];                       // [1,2,3,4,5,6,7,8,9] => [2,4,6,8,10,12,14,16,18] //    map (x * 2)
+                                       //                     =>            [12,14,16,18] // filter (x > 10)
 }
