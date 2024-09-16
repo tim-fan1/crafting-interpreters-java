@@ -391,7 +391,7 @@ public class Parser {
   }
   /**
    * e.g. 2, "2", (a + b * c - d), [1, 2, 3, 4].
-   * primary -> ( NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" )
+   * primary -> ( NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | "[" expressions? "]" )
    */
   private Expr primary() {
     if (match(TokenType.TRUE)) return new Expr.Literal(Boolean.valueOf(true));
@@ -406,9 +406,11 @@ public class Parser {
     }
     if (match(TokenType.LEFT_BRACKET)) {
       List<Expr> values = new ArrayList<>();
-      values.add(expression());
-      while (match(TokenType.COMMA)) {
+      if (peek().type != TokenType.RIGHT_BRACKET) {
         values.add(expression());
+        while (match(TokenType.COMMA)) {
+          values.add(expression());
+        }
       }
       consume(TokenType.RIGHT_BRACKET, "Expect ] to close array declaration.");
       return new Expr.Array(values);
