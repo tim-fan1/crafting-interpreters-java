@@ -9,9 +9,15 @@ fun doASpecialFilter(list) {
   return filteredList;
 }
 
-var list = [1,2,3,4,5,6,7,8,9];
+var list = [];
+for (var i = 1; i < 10; i = i + 1) {
+  list = list + [i];
+}
 list = doASpecialFilter(list);
 for (var i = 0; i < len(list); i = i + 1) {
   print list[i];                       // [1,2,3,4,5,6,7,8,9] => [2,4,6,8,10,12,14,16,18] //    map (x * 2)
                                        //                     =>            [12,14,16,18] // filter (x > 10)
 }
+
+var sum = reduce(lambda (x,y) => { return x + y; }, list);
+print "The sum is " + str(sum);
