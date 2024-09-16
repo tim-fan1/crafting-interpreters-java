@@ -57,17 +57,22 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       @Override
       public String toString() { return "<native fn>"; }
     });
-    // map(apply, array);
+    // map(map, array);
     globals.define("map", new LoxCallable() {
       @Override
       public int arity() { return 2; }
       @Override
       public Object call(Interpreter interpreter, List<Object> arguments) {
-        // Parse apply function.
+        // Parse map function.
         if (!(arguments.get(0) instanceof LoxFunction)) {
           throw new RuntimeError("First argument to map must be a function.");
         }
-        LoxFunction apply = (LoxFunction)arguments.get(0);
+        LoxFunction map = (LoxFunction)arguments.get(0);
+
+        // Map function must have exactly one parameter.
+        if (map.arity() != 1) {
+          throw new RuntimeError("Map function must take exactly one argument.");
+        }
 
         // Parse array list.
         if (!(arguments.get(1) instanceof LoxArray)) {
@@ -75,10 +80,10 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
         }
         LoxArray array = (LoxArray)arguments.get(1);
 
-        // Do the mapping of apply onto array.
+        // Do the map.
         List<Object> appliedList = new ArrayList<>();
         for (Object item : array.list) {
-          appliedList.add(apply.call(interpreter, Arrays.asList(item)));
+          appliedList.add(map.call(interpreter, Arrays.asList(item)));
         }
         return new LoxArray(appliedList);
       }
@@ -96,6 +101,11 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
           throw new RuntimeError("First argument to filter must be a function.");
         }
         LoxFunction filter = (LoxFunction)arguments.get(0);
+
+        // Filter function must have exactly one parameter.
+        if (filter.arity() != 1) {
+          throw new RuntimeError("Filter function must take exactly one argument.");
+        }
 
         // Parse array list.
         if (!(arguments.get(1) instanceof LoxArray)) {
