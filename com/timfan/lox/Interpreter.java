@@ -358,6 +358,12 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
         if ((left instanceof Double) && (right instanceof Double)) {
           return (double)left + (double)right;
         }
+        if ((left instanceof LoxArray) && (right instanceof LoxArray)) {
+          List<Object> list = new ArrayList<>();
+          list.addAll(((LoxArray)left).list);
+          list.addAll(((LoxArray)right).list);
+          return new LoxArray(list);
+        }
         throw new RuntimeError(operator, "Can only add two numbers or two strings together");
       case TokenType.MINUS:
         checkNumberOperand(operator, left, right);
