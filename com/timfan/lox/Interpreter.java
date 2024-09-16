@@ -115,6 +115,46 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
       @Override
       public String toString() { return "<native fn>"; }
     });
+    // reduce(reduce, array);
+    globals.define("reduce", new LoxCallable() {
+      @Override
+      public int arity() { return 2; }
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        // Parse reduce function.
+        if (!(arguments.get(0) instanceof LoxFunction)) {
+          throw new RuntimeError("First argument to reduce must be a function.");
+        }
+        LoxFunction reduce = (LoxFunction)arguments.get(0);
+
+        // Reducer function must have exactly two parameters.
+        if (reduce.arity() != 2) {
+          throw new RuntimeError("Reducer function must take exactly two arguments.");
+        }
+
+        // Parse array list.
+        if (!(arguments.get(1) instanceof LoxArray)) {
+          throw new RuntimeError("Second argument to reduce must be an array.");
+        }
+        LoxArray array = (LoxArray)arguments.get(1);
+        List<Object> list = array.list;
+
+        // Do the reduce.
+        if (list.size() == 0) {
+          return null;
+        }
+        if (list.size() == 1) {
+          return list.get(0);
+        }
+        Object result = list.get(0);
+        for (int i = 1; i < list.size(); i++) {
+          result = reduce.call(interpreter, Arrays.asList(result, list.get(i)));
+        }
+        return result;
+      }
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
   }
 
   public void resolve(Expr expr, int depth) {
