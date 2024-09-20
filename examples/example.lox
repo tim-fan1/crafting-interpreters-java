@@ -46,6 +46,39 @@ if (main() != 0) {
   print "Success!";
 }
 
+var a = 2;
+var dict = {
+  a : 4,
+  str(a) : 5,
+  "a" : 6
+};
+
+print dict[a]; // print 4
+print dict[str(a)]; // print 5
+print dict["a"]; // print 6
+// print dict[a + 1]; // error: key not in dictionary.
+
+print "///////";
+
+dict = {
+  0 : 101010,
+  "144" : 144
+};
+print dict[0]; // print 101010
+print dict["144"]; // print 144
+print "######";
+print "";
+for (var i = 0; i < 10; i = i + 1) {
+  dict[i] = str(i);
+}
+print dict[0]; // print 0
+print dict[9]; // print 9
+// print dict[144]; // error, 144 is not a valid key.
+print dict["144"]; // print 144
+
+print "########";
+print "";
+
 ///////
 
 var list = []; 
