@@ -240,10 +240,10 @@ public class Parser {
         Token identifer = ((Expr.Variable)expr).identifier;
         return new Expr.Assign(identifer, value);
       } else if (expr instanceof Expr.Subscript) {
-        Expr array = ((Expr.Subscript)expr).array;
+        Expr subscriptee = ((Expr.Subscript)expr).subscriptee;
         Expr index = ((Expr.Subscript)expr).index;
         Token bracket = ((Expr.Subscript)expr).bracket;
-        return new Expr.SubscriptAssign(array, bracket, index, value);
+        return new Expr.SubscriptAssign(subscriptee, bracket, index, value);
       } else /* if the thing to the left hand side is not an identifier. */ {
         // we have managed to parse through the entire (invalid) assignment 
         // expression and now we are expecting the next token to be a semicolon, 
@@ -414,6 +414,27 @@ public class Parser {
       }
       consume(TokenType.RIGHT_BRACKET, "Expect ] to close array declaration.");
       return new Expr.Array(values);
+    }
+    if (match(TokenType.LEFT_BRACE)) {
+      List<Expr> dictionary = new ArrayList<>();
+      if (peek().type != TokenType.RIGHT_BRACE) {
+        // "key" : value
+        Expr key = expression();
+        consume(TokenType.COLON, "Expect : after key in dictionary.");
+        Expr value = expression();
+        dictionary.add(key);
+        dictionary.add(value);
+        // while (, "key2" : value2)
+        while (match(TokenType.COMMA)) {
+          key = expression();
+          consume(TokenType.COLON, "Expect : after key in dictionary.");
+          value = expression();
+          dictionary.add(key);
+          dictionary.add(value);
+        }
+      }
+      consume(TokenType.RIGHT_BRACE, "Expect } to close dictionary declaration.");
+      return new Expr.Dictionary(dictionary);
     }
     if (match(TokenType.IDENTIFIER)) {
       // let the interpreter know that here, 

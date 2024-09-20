@@ -39,6 +39,7 @@ abstract class Expr {
     R visitSubscriptExpr(Subscript expr);
     R visitSubscriptAssignExpr(SubscriptAssign expr);
     R visitLambdaExpr(Lambda expr);
+    R visitDictionaryExpr(Dictionary expr);
   }
   abstract <R> R accept(Visitor<R> visitor);
   static class Binary extends Expr {
@@ -148,12 +149,12 @@ abstract class Expr {
     }
   }
   static class Subscript extends Expr {
-    Subscript(Expr array, Token bracket, Expr index) {
-      this.array = array;
+    Subscript(Expr subscriptee, Token bracket, Expr index) {
+      this.subscriptee = subscriptee;
       this.bracket = bracket;
       this.index = index;
     }
-    final Expr array;
+    final Expr subscriptee;
     final Token bracket;
     final Expr index;
     @Override
@@ -162,13 +163,13 @@ abstract class Expr {
     }
   }
   static class SubscriptAssign extends Expr {
-    SubscriptAssign(Expr array, Token bracket, Expr index, Expr value) {
-      this.array = array;
+    SubscriptAssign(Expr subscriptee, Token bracket, Expr index, Expr value) {
+      this.subscriptee = subscriptee;
       this.bracket = bracket;
       this.index = index;
       this.value = value;
     }
-    final Expr array;
+    final Expr subscriptee;
     final Token bracket;
     final Expr index;
     final Expr value;
@@ -185,6 +186,16 @@ abstract class Expr {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitLambdaExpr(this);
+    }
+  }
+  static class Dictionary extends Expr {
+    Dictionary(List<Expr> dictionary) {
+      this.dictionary = dictionary;
+    }
+    final List<Expr> dictionary;
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitDictionaryExpr(this);
     }
   }
 }

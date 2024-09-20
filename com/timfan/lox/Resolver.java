@@ -231,14 +231,21 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     return null;
   }
   @Override
+  public Void visitDictionaryExpr(Expr.Dictionary expr) {
+    for (Expr value : expr.dictionary) {
+      resolve(value);
+    }
+    return null;
+  }
+  @Override
   public Void visitSubscriptExpr(Expr.Subscript expr) {
-    resolve(expr.array);
+    resolve(expr.subscriptee);
     resolve(expr.index);
     return null;
   }
   @Override
   public Void visitSubscriptAssignExpr(Expr.SubscriptAssign expr) {
-    resolve(expr.array);
+    resolve(expr.subscriptee);
     resolve(expr.index);
     resolve(expr.value);
     return null;

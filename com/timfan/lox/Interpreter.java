@@ -356,32 +356,48 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   }
   @Override
   public Object visitSubscriptAssignExpr(Expr.SubscriptAssign expr) {
-    // parse array.
-    Object arrayObject = evaluate(expr.array);
-    if (!(arrayObject instanceof LoxArray)) {
-      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] on arrays.");
+    // parse subscriptee.
+    Object subscripteeObject = evaluate(expr.subscriptee);
+    if (!(subscripteeObject instanceof LoxArray) && !(subscripteeObject instanceof LoxDictionary)) {
+      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] on arrays or dictionaries.");
     }
-    List<Object> list = ((LoxArray)arrayObject).list;
+    if (subscripteeObject instanceof LoxArray) {
+      List<Object> list = ((LoxArray)subscripteeObject).list;
 
-    // parse index.
-    Object indexObject = evaluate(expr.index);
-    if (!(indexObject instanceof Double)) {
-      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
-    }
-    Double index = (Double)indexObject;
-    if (Math.floor(index) != index) {
-      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
-    }
-    if (index.intValue() < 0 || index.intValue() >= list.size()) {
-      throw new RuntimeError(expr.bracket, "Array index out of bounds.");
-    }
+      // parse index.
+      Object indexObject = evaluate(expr.index);
+      if (!(indexObject instanceof Double)) {
+        throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
+      }
+      Double index = (Double)indexObject;
+      if (Math.floor(index) != index) {
+        throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
+      }
+      if (index.intValue() < 0 || index.intValue() >= list.size()) {
+        throw new RuntimeError(expr.bracket, "Array index out of bounds.");
+      }
 
-    // parse value.
-    Object value = evaluate(expr.value);
+      // parse value.
+      Object value = evaluate(expr.value);
 
-    // assign array at index to value.
-    list.set(index.intValue(), value);
-    return value;
+      // assign array at index to value.
+      list.set(index.intValue(), value);
+      return value;
+    } else if (subscripteeObject instanceof LoxDictionary) {
+      Map<Object, Object> dictionary = ((LoxDictionary)subscripteeObject).dictionary;
+
+      // parse index.
+      Object index = evaluate(expr.index);
+
+      // parse value.
+      Object value = evaluate(expr.value);
+
+      // insert into (or update) dictionary.
+      dictionary.put(index, value);
+      return value;
+    }
+    // Control should not reach here...
+    throw new RuntimeError(expr.bracket, "Control should not reach here... Check if the thing that used [] on was an array or dictionary.");
   }
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
@@ -483,29 +499,52 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
   }
 
   @Override
+  public Object visitDictionaryExpr(Expr.Dictionary expr) {
+    Map<Object, Object> dictionary = new HashMap<>();
+    for (int i = 0; i < expr.dictionary.size() / 2; i++) {
+      Object key = evaluate(expr.dictionary.get(2 * i));
+      Object value = evaluate(expr.dictionary.get((2 * i) + 1));
+      dictionary.put(key, value);
+    }
+    return new LoxDictionary(dictionary);
+  }
+
+  @Override
   public Object visitSubscriptExpr(Expr.Subscript expr) {
-    // parse array.
-    Object arrayObject = evaluate(expr.array);
-    if (!(arrayObject instanceof LoxArray)) {
-      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] on arrays.");
+    // parse subscriptee.
+    Object subscripteeObject = evaluate(expr.subscriptee);
+    if (!(subscripteeObject instanceof LoxArray) && !(subscripteeObject instanceof LoxDictionary)) {
+      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] on arrays or dictionaries.");
     }
-    List<Object> list = ((LoxArray)arrayObject).list;
+    if (subscripteeObject instanceof LoxArray) {
+      List<Object> list = ((LoxArray)subscripteeObject).list;
 
-    // parse index.
-    Object indexObject = evaluate(expr.index);
-    if (!(indexObject instanceof Double)) {
-      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
-    }
-    Double index = (Double)indexObject;
-    if (Math.floor(index) != index) {
-      throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
-    }
-    if (index.intValue() < 0 || index.intValue() >= list.size()) {
-      throw new RuntimeError(expr.bracket, "Array index out of bounds.");
+      // parse index.
+      Object indexObject = evaluate(expr.index);
+      if (!(indexObject instanceof Double)) {
+        throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
+      }
+      Double index = (Double)indexObject;
+      if (Math.floor(index) != index) {
+        throw new RuntimeError(expr.bracket, "Can only use subscript operator [] with integers.");
+      }
+      if (index.intValue() < 0 || index.intValue() >= list.size()) {
+        throw new RuntimeError(expr.bracket, "Array index out of bounds.");
+      }
+      return list.get(index.intValue());
+    } else if (subscripteeObject instanceof LoxDictionary) {
+      Map<Object, Object> dictionary = ((LoxDictionary)subscripteeObject).dictionary;
+
+      // parse index.
+      Object index = evaluate(expr.index);
+      if (!dictionary.containsKey(index)) {
+        throw new RuntimeError(expr.bracket, "Dictionary does not contain given key.");
+      }
+      return dictionary.get(index);
     }
 
-    // index into array.
-    return list.get(index.intValue());
+    // Control should not reach here...
+    throw new RuntimeError(expr.bracket, "Control should not reach here... Check if the thing that used [] on was an array or dictionary.");
   }
   /**
    * Used for validating operands before an arithmetic unary operation.
