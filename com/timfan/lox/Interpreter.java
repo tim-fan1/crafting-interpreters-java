@@ -249,21 +249,21 @@ class Interpreter implements Stmt.Visitor<Void>, Expr.Visitor<Object> {
      * given that in visitBlockStmt, local.parent is set to be 
      * the current environment which is this.environment.
      * 
-     * the issue is, is that when functions are called through LoxFunction.call():
+     * the issue is that this same executeBlock is also used by LoxFunction.call. and 
+     * when it is invoked by LoxFunction.call, the local environment that is passed in 
+     * is a local environment that has LoxFunction.closure as its parent. and so in the 
+     * specific case where executeBlock is being invoked by LoxFunction.call: 
      * 
-     * (1) the functions should have their parent be the global environment, 
-     *     so that we can allow for multiple instances of the same function running
-     *     simultaneouly, and not have any name collisions between those instances, and;
-     * 
-     * (2) when we return from finishing calling a function,
-     *     we want to return to the environment of the code that called the function,,, 
-     *     which is not necessarily the global environment!!!
-     * 
-     * so we can't just blindly return to the function's parent environment, which will
-     * always be the global environment! instead we should return to the environment 
-     * that the code that called the function is in, in other words, saving the current
-     * this.environment, and reverting back to it after finishing calling the function,
-     * after finishing executing the block statement. 
+     * if we were to return to local.parent, we will be returning to the LoxFunction's 
+     * closure - the environment in which the LoxFunction was *declared* in - when what 
+     * we want to return to is the local block's environment - the environment in which 
+     * the LoxFunction was *invoked* in.
+     *
+     * to allow for this executeBlock() to be used by both visitBlockStmt and ALSO 
+     * LoxFunction.call, we have executeBlock() remember the current environment in a 
+     * local variable stored on its stack, and revert to the saved current environment 
+     * after returning from finishing execute the block's code, whether that block is a 
+     * normal block like in an if statement, or a function's body code executed as a block.
      */
     Environment previous = this.environment;
     try {
