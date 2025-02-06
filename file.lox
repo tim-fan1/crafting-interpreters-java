@@ -1,0 +1,47 @@
+var cache = [];
+for (var i = 0; i < 31; i = i + 1) {
+  cache = cache + [-1];
+}
+
+fun fib(n) {
+  if (n == 1 or n == 2) {
+    return 1;
+  }
+  return fib(n - 1) + fib(n - 2);
+}
+
+fun fib_memo(n) {
+  if (n == 1 or n == 2) {
+    return 1;
+  }
+  if (cache[n] != -1) return cache[n];
+  cache[n] = fib_memo(n - 1) + fib_memo(n - 2);
+  return cache[n];
+}
+
+fun fib_recursive(n) {
+  print "Printing fibonacci numbers using O(exp n) strategy.";
+  for (var i = 1; i <= n; i = i + 1) {
+    print fib(i);
+  }
+}
+
+fun fib_iterative(n) {
+  print "Printing fibonacci numbers using O(n) strategy.";
+  for (var i = 1; i <= n; i = i + 1) {
+    print fib_memo(i);
+  }
+}
+
+// Print the first 30 fibonacci numbers.
+fun main() {
+  fib_recursive(30);
+  fib_iterative(30);
+  return 0;
+}
+
+if (main() != 0) {
+  print "An error occurred!";
+} else {
+  print "Success!";
+}
